@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Taskcluster-client-go by petemoore</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Taskcluster-client-go</h1>
+        <p class="header">A go (golang) port of taskcluster-client</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/petemoore/taskcluster-client-go/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/petemoore/taskcluster-client-go/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/petemoore/taskcluster-client-go">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/petemoore">petemoore</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a id="taskcluster-clientgo" class="anchor" href="#taskcluster-clientgo" aria-hidden="true"><span class="octicon octicon-link"></span></a>taskcluster-client.go</h1>
+
+<p>A go (golang) port of taskcluster-client</p>
+
+<p>Travis build success/failure messages are posted to irc channel #tcclient-go on irc.mozilla.org:6697.</p>
+
+<p>To see the client in action, try something like this:</p>
+
+<pre><code>package main
+
+import (
+    "fmt"
+    "github.com/petemoore/taskcluster-client-go/model"
+)
+
+func main() {
+    authApi := model.Auth{ClientId: "HKHww8sqrhvbfnde1b29tQ", AccessToken: "3W_LrgrPSc47645fhdgfjtygHHFdhgfFBhdvrnwGaX5Q"}
+    scopes := authApi.Scopes("hjfdhdSHBRhgbdsBFv42tQ")
+    fmt.Printf(scopes.String())
+}
+</code></pre>
+
+<p>With suitable/valid authorization parameters provided, this should return content like:</p>
+
+<pre><code>pmoore@Elisandra:~/go/src/github.com/petemoore/taskcluster-client-go master $ hack
+Client ID:    hdjhtkehgfgdhrb437f$2h
+Scopes:       [*]
+Expires:      2017-01-31T23:00:00.000Z
+</code></pre>
+
+<p>Please note this client API is currently under development, so is not yet ready for use!</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
