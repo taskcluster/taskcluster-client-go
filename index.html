@@ -61,23 +61,38 @@
 <li><a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents">http://godoc.org/github.com/petemoore/taskcluster-client-go/schedulerevents</a></li>
 </ul>
 
-<h3>
-<a id="example-programs" class="anchor" href="#example-programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example programs</h3>
+<h2>
+<a id="example-programs" class="anchor" href="#example-programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example programs</h2>
 
 <p>To get you started quickly, I have also included some example programs that use both the http services and the amqp services:</p>
 
 <ul>
-<li>This <a href="https://github.com/petemoore/taskcluster-client-go/blob/master/auth/examples/modifyclient/modifyclient.go">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/auth">auth</a> package to first query the scopes of a given clientId, and also to update an existing clientId with new data.</li>
-<li>The <a href="https://github.com/petemoore/taskcluster-client-go/blob/master/queueevents/examples/tctasksniffer/sniffer.go">AMQP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents">queueevents</a> package to listen in on Task Cluster tasks being defined and executed.</li>
+<li>This <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/auth#example-package--Scopes">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/auth">auth</a> package to query the scopes of a given clientId.</li>
+<li>This <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/auth#example-package--ModifyClient">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/auth">auth</a> package to update an existing clientId with new data.</li>
+<li>The <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents#example-package--TaskClusterSniffer">AMQP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/petemoore/taskcluster-client-go/queueevents">queueevents</a> package to listen in on Task Cluster tasks being defined and executed.</li>
 </ul>
 
-<h1>
-<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h1>
+<h2>
+<a id="building" class="anchor" href="#building" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building</h2>
+
+<p>The libraries provided by this client are auto-generated based on the schemas listed under
+<a href="http://references.taskcluster.net/manifest.json">http://references.taskcluster.net/manifest.json</a> combined with the supplementary information stored in
+<a href="https://github.com/petemoore/taskcluster-client-go/blob/master/codegenerator/model/apis.json">apis.json</a>.</p>
+
+<p>In order to completely regenerate all of the HTTP and AMQP libraries, please run <a href="https://github.com/petemoore/taskcluster-client-go/blob/master/build.sh">build.sh</a>
+found in the top level directory. This will completely regenerate the library. Please note you will need an active internet connection as the build process must
+download several json files and schemas in order to build the library.</p>
+
+<p>The code which generates the library can all be found under the top level <a href="https://github.com/petemoore/taskcluster-client-go/tree/master/codegenerator">codegenerator</a>
+directory.</p>
+
+<h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
 
 <p>Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.</p>
 
-<h1>
-<a id="travis" class="anchor" href="#travis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Travis</h1>
+<h2>
+<a id="travis" class="anchor" href="#travis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Travis</h2>
 
 <p>Travis build <a href="http://travis-ci.org/petemoore/taskcluster-client-go">success/failure messages</a> are posted to irc channel #tcclient-go on irc.mozilla.org:6697.</p>
       </section>
