@@ -35,18 +35,18 @@ func every(list []interface{}, matches func(interface{}) bool) bool {
 
 // Returns true if `given` satisfies `required`.
 //
-// `given` is an array of strings such as:
+// `given` is a pointer to an array of strings such as:
 //
-//  given := []string{
+//  &[]string{
 //  	"abc:*",
 //  	"123:4:56",
 //  	"xyz",
 //  	"AB:*",
 //  }
 //
-// `required` is an array of arrays of strings such as:
+// `required` is a pointer to an array of arrays of strings such as:
 //
-//  required := [][]string{
+//  &[][]string{
 //  	{"abc:def", "AB:CD:EF"},
 //  	{"123:4:5"},
 //  	{"abc:def", "123:4"},
@@ -61,8 +61,8 @@ func every(list []interface{}, matches func(interface{}) bool) bool {
 // []string of the [][]string is satisfied. In other words, outer array =>
 // logical OR, inner array => logical AND.
 //
-// In the example above, ScopeMatch would return false, since the scopes are not
-// satisfied.
+// In the example above, Satisfies would return true, since the scopes
+// "abc:def" and "AB:CD:EF" are satisfied by "abc:*" and "AB:*".
 func (given *Given) Satisfies(required *Required) bool {
 	requiredI := make([]interface{}, len(*required))
 	for i, d := range *required {
