@@ -35,7 +35,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/github/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 3 Mar 2016 at 16:15:00 UTC. The code was generated
+// Thu, 17 Mar 2016 at 19:11:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package github
 
@@ -80,10 +80,10 @@ func New(credentials *tcclient.Credentials) *Github {
 //   *
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
-func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
+func (myGithub *Github) GithubWebHookConsumer() error {
 	cd := tcclient.ConnectionData(*myGithub)
-	_, callSummary, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
-	return callSummary, err
+	_, _, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
+	return err
 }
 
 // Stability: *** EXPERIMENTAL ***
@@ -93,8 +93,8 @@ func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
 // **Warning** this api end-point is **not stable**.
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#ping
-func (myGithub *Github) Ping() (*tcclient.CallSummary, error) {
+func (myGithub *Github) Ping() error {
 	cd := tcclient.ConnectionData(*myGithub)
-	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
-	return callSummary, err
+	_, _, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
+	return err
 }

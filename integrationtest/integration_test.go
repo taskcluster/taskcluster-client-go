@@ -1,15 +1,12 @@
 package integrationtest
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
-	"regexp"
 	"testing"
 	"time"
 
 	"github.com/taskcluster/slugid-go/slugid"
-	"github.com/taskcluster/taskcluster-base-go/jsontest"
 	"github.com/taskcluster/taskcluster-client-go/index"
 	"github.com/taskcluster/taskcluster-client-go/queue"
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
@@ -25,12 +22,12 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 	creds := &tcclient.Credentials{}
 	Index := index.New(creds)
 	Queue := queue.New(creds)
-	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
+	itr, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
 	taskID := itr.TaskID
-	td, _, err := Queue.Task(taskID)
+	td, err := Queue.Task(taskID)
 	if err != nil {
 		t.Fatalf("%v\n", err)
 	}
@@ -110,25 +107,14 @@ func TestDefineTask(t *testing.T) {
 		WorkerType:  "win2008-worker",
 	}
 
-	tsr, cs, err := myQueue.DefineTask(taskID, td)
+	tsr, err := myQueue.DefineTask(taskID, td)
 
 	//////////////////////////////////
 	// And now validate results.... //
 	//////////////////////////////////
 
-	if err != nil {
-		b := bytes.Buffer{}
-		cs.HttpRequest.Header.Write(&b)
-		headers := regexp.MustCompile(`(mac|nonce)="[^"]*"`).ReplaceAllString(b.String(), `$1="***********"`)
-		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HttpRequest.URL, cs.HttpRequest.Method, headers, cs.HttpRequestBody)
-		t.Fatalf("\n\nResponse received:\n\n%s", err)
-	}
-
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
 
-	if provisionerID := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
-		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
-	}
 	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
 		t.Errorf("schedulerId 'go-test-test-scheduler' expected but got %s", schedulerID)
 	}
@@ -138,69 +124,6 @@ func TestDefineTask(t *testing.T) {
 	if state := tsr.Status.State; state != "unscheduled" {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
-	submittedPayload := cs.HttpRequestBody
-
-	// only the contents is relevant below - the formatting and order of properties does not matter
-	// since a json comparison is done, not a string comparison...
-	expectedJson := []byte(`
-	{
-	  "created":  "` + created.UTC().Format("2006-01-02T15:04:05.000Z") + `",
-	  "deadline": "` + deadline.UTC().Format("2006-01-02T15:04:05.000Z") + `",
-	  "expires":  "` + expires.UTC().Format("2006-01-02T15:04:05.000Z") + `",
-
-	  "taskGroupId": "` + taskGroupID + `",
-	  "workerType":  "win2008-worker",
-	  "schedulerId": "go-test-test-scheduler",
-
-	  "payload": {
-	    "features": {
-	      "relengApiProxy":true
-	    }
-	  },
-
-	  "priority":      "high",
-	  "provisionerId": "win-provisioner",
-	  "retries":       5,
-
-	  "routes": [
-	    "tc-treeherder.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163",
-	    "tc-treeherder-stage.mozilla-inbound.bcf29c305519d6e120b2e4d3b8aa33baaf5f0163"
-	  ],
-
-	  "scopes": [
-	  	"queue:task-priority:high"
-	  ],
-
-	  "tags": {
-	    "createdForUser": "cbook@mozilla.com"
-	  },
-
-	  "extra": {
-	    "index": {
-	      "rank": 12345
-	    }
-	  },
-
-	  "metadata": {
-	    "description": "Stuff",
-	    "name":        "[TC] Pete",
-	    "owner":       "pmoore@mozilla.com",
-	    "source":      "http://everywhere.com/"
-	  }
-	}
-	`)
-
-	jsonCorrect, formattedExpected, formattedActual, err := jsontest.JsonEqual(expectedJson, []byte(submittedPayload))
-	if err != nil {
-		t.Fatalf("Exception thrown formatting json data!\n%s\n\nStruggled to format either:\n%s\n\nor:\n\n%s", err, string(expectedJson), submittedPayload)
-	}
-
-	if !jsonCorrect {
-		t.Log("Anticipated json not generated. Expected:")
-		t.Logf("%s", formattedExpected)
-		t.Log("Actual:")
-		t.Errorf("%s", formattedActual)
-	}
 
 	// check it is possible to cancel the unscheduled task using **temporary credentials**
 	tempCreds, err := permaCreds.CreateTemporaryCredentials(30*time.Second, "queue:cancel-task:"+td.SchedulerID+"/"+td.TaskGroupID+"/"+taskID)
@@ -208,9 +131,9 @@ func TestDefineTask(t *testing.T) {
 		t.Fatalf("Exception thrown generating temporary credentials!\n\n%s\n\n", err)
 	}
 	myQueue = queue.New(tempCreds)
-	_, cs, err = myQueue.CancelTask(taskID)
+	_, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
-		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
+		t.Fatal(err)
 	}
 }

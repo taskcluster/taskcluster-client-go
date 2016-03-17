@@ -71,7 +71,7 @@ func checkAuthenticate(t *testing.T, response *auth.TestAuthenticateResponse, er
 
 func Test_PermaCred(t *testing.T) {
 	client := auth.New(testCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:this"},
 	})
@@ -86,7 +86,7 @@ func Test_TempCred(t *testing.T) {
 		return
 	}
 	client := auth.New(tempCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
 	})
@@ -102,7 +102,7 @@ func Test_NamedTempCred(t *testing.T) {
 		return
 	}
 	client := auth.New(tempCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:jimmy"},
 		RequiredScopes: []string{"scope:1"},
 	})
@@ -149,7 +149,7 @@ func Test_AuthorizedScopes(t *testing.T) {
 	authCreds := *testCreds
 	authCreds.AuthorizedScopes = []string{"scope:1", "scope:3"}
 	client := auth.New(&authCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
 	})
@@ -165,7 +165,7 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"}
 	client := auth.New(tempCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
 	})
@@ -182,7 +182,7 @@ func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"} // note: no create-client
 	client := auth.New(tempCreds)
-	response, _, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
+	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:j*"},
 		RequiredScopes: []string{"scope:1"},
 	})
