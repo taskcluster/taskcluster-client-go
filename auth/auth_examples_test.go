@@ -16,11 +16,12 @@ func Example_scopes() {
 	// However, for the purpose of demonstrating the general case, this is how you can provide
 	// credentials for API calls that require them.
 	myAuth := auth.New(
-		&tcclient.Credentials{
-			ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-			AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-			Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-		},
+		tcclient.NewTemporaryCredentials(
+			os.Getenv("TASKCLUSTER_CLIENT_ID"),
+			os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+			os.Getenv("TASKCLUSTER_CERTIFICATE"),
+			nil,
+		),
 	)
 
 	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
@@ -49,7 +50,7 @@ func Example_updateClient() {
 	// localhost with authentication disabled. This would also work for
 	// connecting to a local taskcluster-proxy instance.
 	myAuth := auth.New(
-		&tcclient.Credentials{},
+		nil,
 	)
 
 	// Disable authentication and set target url to localhost url...
@@ -82,5 +83,5 @@ func Example_updateClient() {
 	fmt.Printf("Last Rotated:     %v\n", client.LastRotated)
 
 	// if we want, we can also show the raw json that was returned...
-	fmt.Println(cs.HttpResponseBody)
+	fmt.Println(cs.HTTPResponseBody)
 }

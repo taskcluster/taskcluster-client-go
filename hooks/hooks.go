@@ -53,7 +53,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-type Hooks tcclient.ConnectionData
+type Hooks tcclient.BaseClient
 
 // Returns a pointer to Hooks, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -74,8 +74,8 @@ type Hooks tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Hooks {
-	myHooks := Hooks(tcclient.ConnectionData{
+func New(credentials tcclient.Credentials) *Hooks {
+	myHooks := Hooks(tcclient.BaseClient{
 		Credentials:  credentials,
 		BaseURL:      "https://hooks.taskcluster.net/v1",
 		Authenticate: true,
@@ -89,7 +89,7 @@ func New(credentials *tcclient.Credentials) *Hooks {
 //
 // See http://docs.taskcluster.net/services/hooks/#listHookGroups
 func (myHooks *Hooks) ListHookGroups() (*HookGroups, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks", new(HookGroups), nil)
 	return responseObject.(*HookGroups), callSummary, err
 }
@@ -101,7 +101,7 @@ func (myHooks *Hooks) ListHookGroups() (*HookGroups, *tcclient.CallSummary, erro
 //
 // See http://docs.taskcluster.net/services/hooks/#listHooks
 func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId), new(HookList), nil)
 	return responseObject.(*HookList), callSummary, err
 }
@@ -113,7 +113,7 @@ func (myHooks *Hooks) ListHooks(hookGroupId string) (*HookList, *tcclient.CallSu
 //
 // See http://docs.taskcluster.net/services/hooks/#hook
 func (myHooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
@@ -125,7 +125,7 @@ func (myHooks *Hooks) Hook(hookGroupId, hookId string) (*HookDefinition, *tcclie
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookStatus
 func (myHooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/status", new(HookStatusResponse), nil)
 	return responseObject.(*HookStatusResponse), callSummary, err
 }
@@ -137,7 +137,7 @@ func (myHooks *Hooks) GetHookStatus(hookGroupId, hookId string) (*HookStatusResp
 //
 // See http://docs.taskcluster.net/services/hooks/#getHookSchedule
 func (myHooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookScheduleResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId)+"/schedule", new(HookScheduleResponse), nil)
 	return responseObject.(*HookScheduleResponse), callSummary, err
 }
@@ -156,7 +156,7 @@ func (myHooks *Hooks) GetHookSchedule(hookGroupId, hookId string) (*HookSchedule
 //
 // See http://docs.taskcluster.net/services/hooks/#createHook
 func (myHooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
@@ -172,7 +172,7 @@ func (myHooks *Hooks) CreateHook(hookGroupId, hookId string, payload *HookCreati
 //
 // See http://docs.taskcluster.net/services/hooks/#updateHook
 func (myHooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreationRequest) (*HookDefinition, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), new(HookDefinition), nil)
 	return responseObject.(*HookDefinition), callSummary, err
 }
@@ -186,7 +186,7 @@ func (myHooks *Hooks) UpdateHook(hookGroupId, hookId string, payload *HookCreati
 //
 // See http://docs.taskcluster.net/services/hooks/#removeHook
 func (myHooks *Hooks) RemoveHook(hookGroupId, hookId string) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myHooks)
+	cd := tcclient.BaseClient(*myHooks)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/hooks/"+url.QueryEscape(hookGroupId)+"/"+url.QueryEscape(hookId), nil, nil)
 	return callSummary, err
 }

@@ -116,7 +116,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-type ` + api.apiDef.Name + ` tcclient.ConnectionData
+type ` + api.apiDef.Name + ` tcclient.BaseClient
 
 // Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -139,8 +139,8 @@ type ` + api.apiDef.Name + ` tcclient.ConnectionData
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "func New(credentials *tcclient.Credentials) *" + api.apiDef.Name + " {\n"
-	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.ConnectionData{\n"
+	content += "func New(credentials tcclient.Credentials) *" + api.apiDef.Name + " {\n"
+	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.BaseClient{\n"
 	content += "\t\tCredentials: credentials,\n"
 	content += "\t\tBaseURL: \"" + api.BaseURL + "\",\n"
 	content += "\t\tAuthenticate: true,\n"
@@ -275,7 +275,7 @@ func (entry *APIEntry) generateDirectMethod(apiName string) string {
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "(" + inputParams + ") " + responseType + " {\n"
 	content += queryCode
-	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
+	content += "\tcd := tcclient.BaseClient(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	if entry.Output != "" {
 		content += "\tresponseObject, callSummary, err := (&cd).APICall(" + apiArgsPayload + ", \"" + strings.ToUpper(entry.Method) + "\", \"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", new(" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), " + queryExpr + ")\n"
 		content += "\treturn responseObject.(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + "), callSummary, err\n"
@@ -309,7 +309,7 @@ func (entry *APIEntry) generateSignedURLMethod(apiName string) string {
 	content := comment
 	content += "func (" + entry.Parent.apiDef.ExampleVarName + " *" + entry.Parent.apiDef.Name + ") " + entry.MethodName + "_SignedURL(" + inputParams + ") (*url.URL, error) {\n"
 	content += queryCode
-	content += "\tcd := tcclient.ConnectionData(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
+	content += "\tcd := tcclient.BaseClient(*" + entry.Parent.apiDef.ExampleVarName + ")\n"
 	content += "\treturn (&cd).SignedURL(\"" + strings.Replace(strings.Replace(entry.Route, "<", "\" + url.QueryEscape(", -1), ">", ") + \"", -1) + "\", " + queryExpr + ", duration)\n"
 	content += "}\n"
 	content += "\n"

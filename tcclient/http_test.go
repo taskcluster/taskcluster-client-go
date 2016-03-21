@@ -17,11 +17,11 @@ import (
 func TestExtHeaderPermAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
-		&Credentials{
-			ClientId:         "abc",
-			AccessToken:      "def",
-			AuthorizedScopes: []string{"a", "b", "c"},
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			[]string{"a", "b", "c"},
+		),
 		// base64 of `{"authorizedScopes":["a","b","c"]}`
 		"eyJhdXRob3JpemVkU2NvcGVzIjpbImEiLCJiIiwiYyJdfQ==",
 	)
@@ -33,10 +33,11 @@ func TestExtHeaderPermAuthScopes(t *testing.T) {
 func TestExtHeaderPermNilAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
-		&Credentials{
-			ClientId:    "abc",
-			AccessToken: "def",
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			nil,
+		),
 		"",
 	)
 }
@@ -47,11 +48,11 @@ func TestExtHeaderPermNilAuthScopes(t *testing.T) {
 func TestExtHeaderPermNoAuthScopes(t *testing.T) {
 	checkExtHeader(
 		t,
-		&Credentials{
-			ClientId:         "abc",
-			AccessToken:      "def",
-			AuthorizedScopes: []string{},
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			[]string{},
+		),
 		// base64 of `{"authorizedScopes":[]}`
 		"eyJhdXRob3JpemVkU2NvcGVzIjpbXX0=",
 	)
@@ -63,11 +64,11 @@ func TestExtHeaderPermNoAuthScopes(t *testing.T) {
 func TestExtHeaderTempAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
-		&Credentials{
-			ClientId:         "abc",
-			AccessToken:      "def",
-			AuthorizedScopes: []string{"a", "b", "c"},
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			[]string{"a", "b", "c"},
+		),
 	)
 }
 
@@ -77,10 +78,11 @@ func TestExtHeaderTempAuthScopes(t *testing.T) {
 func TestExtHeaderTempNilAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
-		&Credentials{
-			ClientId:    "abc",
-			AccessToken: "def",
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			nil,
+		),
 	)
 }
 
@@ -90,11 +92,11 @@ func TestExtHeaderTempNilAuthScopes(t *testing.T) {
 func TestExtHeaderTempNoAuthScopes(t *testing.T) {
 	checkExtHeaderTempCreds(
 		t,
-		&Credentials{
-			ClientId:         "abc",
-			AccessToken:      "def",
-			AuthorizedScopes: []string{},
-		},
+		NewPermanentCredentials(
+			"abc",
+			"def",
+			[]string{},
+		),
 	)
 }
 
@@ -111,12 +113,12 @@ type ExtHeaderRawCert struct {
 // authorized scopes were set, that the authorizedScopes are not set in the
 // header; if they are set to anything, including an empty array, that this
 // matches what is found in the header.
-func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
+func checkExtHeaderTempCreds(t *testing.T, permCreds *PermanentCredentials) {
 	tempCredentials, err := permCreds.CreateTemporaryCredentials(time.Second*1, "d", "e", "f")
 	if err != nil {
 		t.Fatalf("Received error when generating temporary credentials: %s", err)
 	}
-	actualHeader, err := getExtHeader(tempCredentials)
+	actualHeader, err := tempCredentials.getExtField()
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
 	}
@@ -158,8 +160,8 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 
 // checkExtHeader simply checks if getExtHeader returns the same results as the
 // specified expected header.
-func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
-	actualHeader, err := getExtHeader(creds)
+func checkExtHeader(t *testing.T, creds Credentials, expectedHeader string) {
+	actualHeader, err := creds.getExtField()
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
 	}

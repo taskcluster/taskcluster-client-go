@@ -45,7 +45,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-type PurgeCache tcclient.ConnectionData
+type PurgeCache tcclient.BaseClient
 
 // Returns a pointer to PurgeCache, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -66,8 +66,8 @@ type PurgeCache tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *PurgeCache {
-	purgeCache := PurgeCache(tcclient.ConnectionData{
+func New(credentials tcclient.Credentials) *PurgeCache {
+	purgeCache := PurgeCache(tcclient.BaseClient{
 		Credentials:  credentials,
 		BaseURL:      "https://purge-cache.taskcluster.net/v1",
 		Authenticate: true,
@@ -86,7 +86,7 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 //
 // See http://docs.taskcluster.net/services/purge-cache/#purgeCache
 func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, payload *PurgeCacheRequest) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.BaseClient(*purgeCache)
 	_, callSummary, err := (&cd).APICall(payload, "POST", "/purge-cache/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, nil)
 	return callSummary, err
 }
@@ -99,7 +99,7 @@ func (purgeCache *PurgeCache) PurgeCache(provisionerId, workerType string, paylo
 //
 // See http://docs.taskcluster.net/services/purge-cache/#ping
 func (purgeCache *PurgeCache) Ping() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*purgeCache)
+	cd := tcclient.BaseClient(*purgeCache)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }
