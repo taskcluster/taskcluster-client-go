@@ -49,7 +49,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-type Queue tcclient.ConnectionData
+type Queue tcclient.BaseClient
 
 // Returns a pointer to Queue, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -70,8 +70,8 @@ type Queue tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Queue {
-	myQueue := Queue(tcclient.ConnectionData{
+func New(credentials tcclient.Credentials) *Queue {
+	myQueue := Queue(tcclient.BaseClient{
 		Credentials:  credentials,
 		BaseURL:      "https://queue.taskcluster.net/v1",
 		Authenticate: true,
@@ -85,7 +85,7 @@ func New(credentials *tcclient.Credentials) *Queue {
 //
 // See http://docs.taskcluster.net/queue/api-docs/#task
 func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId), new(TaskDefinitionResponse), nil)
 	return responseObject.(*TaskDefinitionResponse), callSummary, err
 }
@@ -94,7 +94,7 @@ func (myQueue *Queue) Task(taskId string) (*TaskDefinitionResponse, *tcclient.Ca
 //
 // See http://docs.taskcluster.net/queue/api-docs/#status
 func (myQueue *Queue) Status(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/status", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -121,7 +121,7 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 	v := url.Values{}
 	v.Add("continuationToken", continuationToken)
 	v.Add("limit", limit)
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task-group/"+url.QueryEscape(taskGroupId)+"/list", new(ListTaskGroupResponse), v)
 	return responseObject.(*ListTaskGroupResponse), callSummary, err
 }
@@ -154,7 +154,7 @@ func (myQueue *Queue) ListTaskGroup(taskGroupId, continuationToken, limit string
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createTask
 func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "PUT", "/task/"+url.QueryEscape(taskId), new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -184,7 +184,7 @@ func (myQueue *Queue) CreateTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#defineTask
 func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/define", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -204,7 +204,7 @@ func (myQueue *Queue) DefineTask(taskId string, payload *TaskDefinitionRequest) 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#scheduleTask
 func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/schedule", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -230,7 +230,7 @@ func (myQueue *Queue) ScheduleTask(taskId string) (*TaskStatusResponse, *tcclien
 //
 // See http://docs.taskcluster.net/queue/api-docs/#rerunTask
 func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/rerun", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -254,7 +254,7 @@ func (myQueue *Queue) RerunTask(taskId string) (*TaskStatusResponse, *tcclient.C
 //
 // See http://docs.taskcluster.net/queue/api-docs/#cancelTask
 func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/cancel", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -269,7 +269,7 @@ func (myQueue *Queue) CancelTask(taskId string) (*TaskStatusResponse, *tcclient.
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pollTaskUrls
 func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskUrlsResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(PollTaskUrlsResponse), nil)
 	return responseObject.(*PollTaskUrlsResponse), callSummary, err
 }
@@ -282,7 +282,7 @@ func (myQueue *Queue) PollTaskUrls(provisionerId, workerType string) (*PollTaskU
 //
 // See PollTaskUrls for more details.
 func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	return (&cd).SignedURL("/poll-task-url/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), nil, duration)
 }
 
@@ -294,7 +294,7 @@ func (myQueue *Queue) PollTaskUrls_SignedURL(provisionerId, workerType string, d
 //
 // See http://docs.taskcluster.net/queue/api-docs/#claimTask
 func (myQueue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest) (*TaskClaimResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/claim", new(TaskClaimResponse), nil)
 	return responseObject.(*TaskClaimResponse), callSummary, err
 }
@@ -307,7 +307,7 @@ func (myQueue *Queue) ClaimTask(taskId, runId string, payload *TaskClaimRequest)
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reclaimTask
 func (myQueue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/reclaim", new(TaskReclaimResponse), nil)
 	return responseObject.(*TaskReclaimResponse), callSummary, err
 }
@@ -320,7 +320,7 @@ func (myQueue *Queue) ReclaimTask(taskId, runId string) (*TaskReclaimResponse, *
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportCompleted
 func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/completed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -339,7 +339,7 @@ func (myQueue *Queue) ReportCompleted(taskId, runId string) (*TaskStatusResponse
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportFailed
 func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/failed", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -363,7 +363,7 @@ func (myQueue *Queue) ReportFailed(taskId, runId string) (*TaskStatusResponse, *
 //
 // See http://docs.taskcluster.net/queue/api-docs/#reportException
 func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExceptionRequest) (*TaskStatusResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/exception", new(TaskStatusResponse), nil)
 	return responseObject.(*TaskStatusResponse), callSummary, err
 }
@@ -433,7 +433,7 @@ func (myQueue *Queue) ReportException(taskId, runId string, payload *TaskExcepti
 //
 // See http://docs.taskcluster.net/queue/api-docs/#createArtifact
 func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostArtifactRequest) (*PostArtifactResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(payload, "POST", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), new(PostArtifactResponse), nil)
 	return responseObject.(*PostArtifactResponse), callSummary, err
 }
@@ -455,7 +455,7 @@ func (myQueue *Queue) CreateArtifact(taskId, runId, name string, payload *PostAr
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getArtifact
 func (myQueue *Queue) GetArtifact(taskId, runId, name string) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -467,7 +467,7 @@ func (myQueue *Queue) GetArtifact(taskId, runId, name string) (*tcclient.CallSum
 //
 // See GetArtifact for more details.
 func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
@@ -492,7 +492,7 @@ func (myQueue *Queue) GetArtifact_SignedURL(taskId, runId, name string, duration
 //
 // See http://docs.taskcluster.net/queue/api-docs/#getLatestArtifact
 func (myQueue *Queue) GetLatestArtifact(taskId, name string) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -504,7 +504,7 @@ func (myQueue *Queue) GetLatestArtifact(taskId, name string) (*tcclient.CallSumm
 //
 // See GetLatestArtifact for more details.
 func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	return (&cd).SignedURL("/task/"+url.QueryEscape(taskId)+"/artifacts/"+url.QueryEscape(name), nil, duration)
 }
 
@@ -514,7 +514,7 @@ func (myQueue *Queue) GetLatestArtifact_SignedURL(taskId, name string, duration 
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listArtifacts
 func (myQueue *Queue) ListArtifacts(taskId, runId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/runs/"+url.QueryEscape(runId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
@@ -526,7 +526,7 @@ func (myQueue *Queue) ListArtifacts(taskId, runId string) (*ListArtifactsRespons
 //
 // See http://docs.taskcluster.net/queue/api-docs/#listLatestArtifacts
 func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/task/"+url.QueryEscape(taskId)+"/artifacts", new(ListArtifactsResponse), nil)
 	return responseObject.(*ListArtifactsResponse), callSummary, err
 }
@@ -541,7 +541,7 @@ func (myQueue *Queue) ListLatestArtifacts(taskId string) (*ListArtifactsResponse
 //
 // See http://docs.taskcluster.net/queue/api-docs/#pendingTasks
 func (myQueue *Queue) PendingTasks(provisionerId, workerType string) (*CountPendingTasksResponse, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/pending/"+url.QueryEscape(provisionerId)+"/"+url.QueryEscape(workerType), new(CountPendingTasksResponse), nil)
 	return responseObject.(*CountPendingTasksResponse), callSummary, err
 }
@@ -554,7 +554,7 @@ func (myQueue *Queue) PendingTasks(provisionerId, workerType string) (*CountPend
 //
 // See http://docs.taskcluster.net/queue/api-docs/#ping
 func (myQueue *Queue) Ping() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myQueue)
+	cd := tcclient.BaseClient(*myQueue)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }

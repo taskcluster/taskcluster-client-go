@@ -43,7 +43,7 @@ import (
 	"github.com/taskcluster/taskcluster-client-go/tcclient"
 )
 
-type Secrets tcclient.ConnectionData
+type Secrets tcclient.BaseClient
 
 // Returns a pointer to Secrets, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -64,8 +64,8 @@ type Secrets tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Secrets {
-	mySecrets := Secrets(tcclient.ConnectionData{
+func New(credentials tcclient.Credentials) *Secrets {
+	mySecrets := Secrets(tcclient.BaseClient{
 		Credentials:  credentials,
 		BaseURL:      "https://secrets.taskcluster.net/v1",
 		Authenticate: true,
@@ -82,7 +82,7 @@ func New(credentials *tcclient.Credentials) *Secrets {
 //
 // See http://docs.taskcluster.net/services/secrets/#set
 func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	_, callSummary, err := (&cd).APICall(payload, "PUT", "/secret/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -96,7 +96,7 @@ func (mySecrets *Secrets) Set(name string, payload *Secret) (*tcclient.CallSumma
 //
 // See http://docs.taskcluster.net/services/secrets/#remove
 func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	_, callSummary, err := (&cd).APICall(nil, "DELETE", "/secret/"+url.QueryEscape(name), nil, nil)
 	return callSummary, err
 }
@@ -110,7 +110,7 @@ func (mySecrets *Secrets) Remove(name string) (*tcclient.CallSummary, error) {
 //
 // See http://docs.taskcluster.net/services/secrets/#get
 func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secret/"+url.QueryEscape(name), new(Secret), nil)
 	return responseObject.(*Secret), callSummary, err
 }
@@ -122,7 +122,7 @@ func (mySecrets *Secrets) Get(name string) (*Secret, *tcclient.CallSummary, erro
 //
 // See Get for more details.
 func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*url.URL, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	return (&cd).SignedURL("/secret/"+url.QueryEscape(name), nil, duration)
 }
 
@@ -132,7 +132,7 @@ func (mySecrets *Secrets) Get_SignedURL(name string, duration time.Duration) (*u
 //
 // See http://docs.taskcluster.net/services/secrets/#list
 func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	responseObject, callSummary, err := (&cd).APICall(nil, "GET", "/secrets", new(SecretsList), nil)
 	return responseObject.(*SecretsList), callSummary, err
 }
@@ -145,7 +145,7 @@ func (mySecrets *Secrets) List() (*SecretsList, *tcclient.CallSummary, error) {
 //
 // See http://docs.taskcluster.net/services/secrets/#ping
 func (mySecrets *Secrets) Ping() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*mySecrets)
+	cd := tcclient.BaseClient(*mySecrets)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }

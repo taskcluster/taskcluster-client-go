@@ -41,7 +41,7 @@ package github
 
 import "github.com/taskcluster/taskcluster-client-go/tcclient"
 
-type Github tcclient.ConnectionData
+type Github tcclient.BaseClient
 
 // Returns a pointer to Github, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
@@ -62,8 +62,8 @@ type Github tcclient.ConnectionData
 //  if err != nil {
 //  	// handle errors...
 //  }
-func New(credentials *tcclient.Credentials) *Github {
-	myGithub := Github(tcclient.ConnectionData{
+func New(credentials tcclient.Credentials) *Github {
+	myGithub := Github(tcclient.BaseClient{
 		Credentials:  credentials,
 		BaseURL:      "https://github.taskcluster.net/v1",
 		Authenticate: true,
@@ -81,7 +81,7 @@ func New(credentials *tcclient.Credentials) *Github {
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#githubWebHookConsumer
 func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myGithub)
+	cd := tcclient.BaseClient(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "POST", "/github", nil, nil)
 	return callSummary, err
 }
@@ -94,7 +94,7 @@ func (myGithub *Github) GithubWebHookConsumer() (*tcclient.CallSummary, error) {
 //
 // See http://docs.taskcluster.net/services/taskcluster-github/#ping
 func (myGithub *Github) Ping() (*tcclient.CallSummary, error) {
-	cd := tcclient.ConnectionData(*myGithub)
+	cd := tcclient.BaseClient(*myGithub)
 	_, callSummary, err := (&cd).APICall(nil, "GET", "/ping", nil, nil)
 	return callSummary, err
 }

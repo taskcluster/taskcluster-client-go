@@ -7,16 +7,31 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/taskcluster/jsonschema2go/text"
 	"github.com/taskcluster/slugid-go/slugid"
+	"github.com/tent/hawk-go"
 )
 
-type Credentials struct {
-	ClientId    string `json:"clientId"`
+type Credentials interface {
+	fmt.Stringer
+	ConfigureAuth(httpRequest *http.Request) error
+	getExtField() (string, error)
+	HawkCredentials() *hawk.Credentials
+}
+
+// Credentials for communicating with taskcluster services (Queue, Index,
+// Scheduler, etc).
+type TemporaryCredentials struct {
+	temporaryCredentials
+}
+
+type temporaryCredentials struct {
+	ClientID    string `json:"clientId"`
 	AccessToken string `json:"accessToken"`
 	// Certificate used only for temporary credentials
 	Certificate string `json:"certificate"`
@@ -31,21 +46,73 @@ type Credentials struct {
 	AuthorizedScopes []string `json:"authorizedScopes"`
 }
 
-func (creds *Credentials) String() string {
+type EmptyCredentials struct {
+}
+
+func NewPermanentCredentials(clientID string, accessToken string, authorizedScopes []string) *PermanentCredentials {
+	return &PermanentCredentials{
+		permanentCredentials: permanentCredentials{
+			ClientID:         clientID,
+			AccessToken:      accessToken,
+			AuthorizedScopes: authorizedScopes,
+		},
+	}
+}
+
+func NewTemporaryCredentials(clientID string, accessToken string, certificate string, authorizedScopes []string) *TemporaryCredentials {
+	return &TemporaryCredentials{
+		temporaryCredentials: temporaryCredentials{
+			ClientID:         clientID,
+			AccessToken:      accessToken,
+			Certificate:      certificate,
+			AuthorizedScopes: authorizedScopes,
+		},
+	}
+}
+
+type PermanentCredentials struct {
+	permanentCredentials
+}
+
+type permanentCredentials struct {
+	ClientID    string `json:"clientId"`
+	AccessToken string `json:"accessToken"`
+	// Certificate used only for temporary credentials
+	Certificate string `json:"certificate"`
+	// AuthorizedScopes if set to nil, is ignored. Otherwise, it should be a
+	// subset of the scopes that the ClientId already has, and restricts the
+	// Credentials to only having these scopes. This is useful when performing
+	// actions on behalf of a client which has more restricted scopes. Setting
+	// to nil is not the same as setting to an empty array. If AuthorizedScopes
+	// is set to an empty array rather than nil, this is equivalent to having
+	// no scopes at all.
+	// See http://docs.taskcluster.net/auth/authorized-scopes
+	AuthorizedScopes []string `json:"authorizedScopes"`
+}
+
+func (creds *PermanentCredentials) String() string {
 	return fmt.Sprintf(
-		"ClientId: %q\nAccessToken: %q\nCertificate: %q\nAuthorizedScopes: %q",
-		creds.ClientId,
+		"Permanent credentials: ClientId: %q\nAccessToken: %q\nAuthorizedScopes: %q",
+		creds.ClientID,
+		text.StarOut(creds.AccessToken),
+		creds.AuthorizedScopes,
+	)
+}
+
+func (creds *TemporaryCredentials) String() string {
+	return fmt.Sprintf(
+		"Temporary credentials: ClientId: %q\nAccessToken: %q\nCertificate: %q\nAuthorizedScopes: %q",
+		creds.ClientID,
 		text.StarOut(creds.AccessToken),
 		text.StarOut(creds.Certificate),
 		creds.AuthorizedScopes,
 	)
 }
 
-// The entry point into all the functionality in this package is to create a
-// ConnectionData object. It contains authentication credentials, and a service
-// endpoint, which are required for all HTTP operations.
-type ConnectionData struct {
-	Credentials *Credentials
+// BaseClient contains authentication credentials, and a service endpoint,
+// which are required for all HTTP operations.
+type BaseClient struct {
+	Credentials Credentials
 	// The URL of the API endpoint to hit.
 	// Use "https://auth.taskcluster.net/v1" for production.
 	// Please note calling auth.New(clientId string, accessToken string) is an
@@ -57,6 +124,24 @@ type ConnectionData struct {
 	Authenticate bool
 }
 
+func (creds PermanentCredentials) HawkCredentials() *hawk.Credentials {
+	return &hawk.Credentials{
+		ID:   creds.ClientID,
+		Key:  creds.AccessToken,
+		Hash: sha256.New,
+	}
+}
+
+func (creds TemporaryCredentials) HawkCredentials() *hawk.Credentials {
+	return &hawk.Credentials{
+		ID:   creds.ClientID,
+		Key:  creds.AccessToken,
+		Hash: sha256.New,
+	}
+}
+
+// Certificate represents the certificate attached to hawk's ext property as
+// per http://docs.taskcluster.net/auth/temporary-credentials/
 type Certificate struct {
 	Version   int      `json:"version"`
 	Scopes    []string `json:"scopes"`
@@ -75,22 +160,22 @@ type Certificate struct {
 // temporary credentials, but will not be restricted via the certificate.
 //
 // See http://docs.taskcluster.net/auth/temporary-credentials/
-func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId string, duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
+func (permCreds *PermanentCredentials) CreateNamedTemporaryCredentials(tempClientID string, duration time.Duration, scopes ...string) (tempCreds *TemporaryCredentials, err error) {
 	if duration > 31*24*time.Hour {
-		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.ConnectionData).CreateTemporaryCredentials(...) method")
+		return nil, errors.New("Temporary credentials must expire within 31 days; however a duration of " + duration.String() + " was specified to (*tcclient.BaseClient).CreateTemporaryCredentials(...) method")
 	}
 
 	now := time.Now()
 	start := now.Add(time.Minute * -5) // subtract 5 min for clock drift
 	expiry := now.Add(duration)
 
-	if permaCreds.ClientId == "" {
+	if permCreds.ClientID == "" {
 		return nil, errors.New("Temporary credentials cannot be created from credentials that have an empty ClientId")
 	}
-	if permaCreds.AccessToken == "" {
+	if permCreds.AccessToken == "" {
 		return nil, errors.New("Temporary credentials cannot be created from credentials that have an empty AccessToken")
 	}
-	if permaCreds.Certificate != "" {
+	if permCreds.Certificate != "" {
 		return nil, errors.New("Temporary credentials cannot be created from temporary credentials, only from permanent credentials")
 	}
 
@@ -103,30 +188,30 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId stri
 		Signature: "", // gets set in updateSignature() method below
 	}
 	// include the issuer iff this is a named credential
-	if tempClientId != "" {
-		cert.Issuer = permaCreds.ClientId
+	if tempClientID != "" {
+		cert.Issuer = permCreds.ClientID
 	}
 
-	cert.updateSignature(permaCreds.AccessToken, tempClientId)
+	cert.updateSignature(permCreds.AccessToken, tempClientID)
 
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
 		return
 	}
 
-	tempAccessToken, err := generateTemporaryAccessToken(permaCreds.AccessToken, cert.Seed)
+	tempAccessToken, err := generateTemporaryAccessToken(permCreds.AccessToken, cert.Seed)
 	if err != nil {
 		return
 	}
 
-	tempCreds = &Credentials{
-		ClientId:         permaCreds.ClientId,
-		AccessToken:      tempAccessToken,
-		Certificate:      string(certBytes),
-		AuthorizedScopes: permaCreds.AuthorizedScopes,
-	}
-	if tempClientId != "" {
-		tempCreds.ClientId = tempClientId
+	tempCreds = NewTemporaryCredentials(
+		permCreds.ClientID,
+		tempAccessToken,
+		string(certBytes),
+		permCreds.AuthorizedScopes,
+	)
+	if tempClientID != "" {
+		tempCreds.ClientID = tempClientID
 	}
 
 	return
@@ -134,16 +219,16 @@ func (permaCreds *Credentials) CreateNamedTemporaryCredentials(tempClientId stri
 
 // CreateTemporaryCredentials is an alias for CreateNamedTemporaryCredentials
 // with an empty name.
-func (permaCreds *Credentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *Credentials, err error) {
-	return permaCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
+func (permCreds *PermanentCredentials) CreateTemporaryCredentials(duration time.Duration, scopes ...string) (tempCreds *TemporaryCredentials, err error) {
+	return permCreds.CreateNamedTemporaryCredentials("", duration, scopes...)
 }
 
-func (cert *Certificate) updateSignature(accessToken string, tempClientId string) (err error) {
+func (cert *Certificate) updateSignature(accessToken string, tempClientID string) (err error) {
 	lines := []string{"version:" + strconv.Itoa(cert.Version)}
 	// iff this is a named credential, include clientId and issuer
 	if cert.Issuer != "" {
 		lines = append(lines,
-			"clientId:"+tempClientId,
+			"clientId:"+tempClientID,
 			"issuer:"+cert.Issuer,
 		)
 	}
@@ -174,12 +259,13 @@ func generateTemporaryAccessToken(permAccessToken, seed string) (tempAccessToken
 	return
 }
 
-// Attempts to parse the certificate string to return it as an object. If the
-// certificate is an empty string (e.g. in the case of permanent credentials)
-// then a nil pointer is returned for the certificate. If a certificate has
-// been specified but cannot be parsed, an error is returned, and cert is an
-// empty certificate (rather than nil).
-func (creds *Credentials) Cert() (cert *Certificate, err error) {
+// Cert attempts to parse the (string) certificate of the credentials as JSON
+// and return it as a Certificate object. If the certificate string is empty
+// (e.g. in the case of permanent credentials) then a nil pointer is returned.
+// If the certificate is a non-empty string which cannot be parsed, an error is
+// returned, and the returned certificate is a pointer to an empty Certificate,
+// rather than a nil pointer.
+func (creds *TemporaryCredentials) Cert() (cert *Certificate, err error) {
 	if creds.Certificate != "" {
 		cert = new(Certificate)
 		err = json.Unmarshal([]byte(creds.Certificate), cert)

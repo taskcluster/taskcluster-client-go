@@ -12,10 +12,11 @@ import (
 )
 
 func ExampleCredentials_CreateTemporaryCredentials() {
-	permaCreds := tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-	}
+	permaCreds := tcclient.NewPermanentCredentials(
+		os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		nil,
+	)
 	tempCreds, err := permaCreds.CreateTemporaryCredentials(24*time.Hour, "dummy:scope:1", "dummy:scope:2")
 	if err != nil {
 		// handle error
@@ -25,10 +26,11 @@ func ExampleCredentials_CreateTemporaryCredentials() {
 
 func Test_CreateTemporaryCredentials_WellFormed(t *testing.T) {
 	// fake credentials
-	permaCreds := tcclient.Credentials{
-		ClientId:    "permacred",
-		AccessToken: "eHMnHH7PTSqplJSC_qAJ2QKGt8egfvRaqxczIRgOScaw",
-	}
+	permaCreds := tcclient.NewPermanentCredentials(
+		"permacred",
+		"eHMnHH7PTSqplJSC_qAJ2QKGt8egfvRaqxczIRgOScaw",
+		nil,
+	)
 
 	tempCreds, err := permaCreds.CreateTemporaryCredentials(24*time.Hour, "scope1")
 	if err != nil {
@@ -39,8 +41,8 @@ func Test_CreateTemporaryCredentials_WellFormed(t *testing.T) {
 		t.Errorf("temp creds have AuthorizedScopes!?")
 	}
 
-	if tempCreds.ClientId != permaCreds.ClientId {
-		t.Errorf("%s != %s", tempCreds.ClientId, permaCreds.ClientId)
+	if tempCreds.ClientID != permaCreds.ClientID {
+		t.Errorf("%s != %s", tempCreds.ClientID, permaCreds.ClientID)
 	}
 
 	// Certificate and AccessToken are nondeterministic; we rely on other tests
@@ -48,10 +50,11 @@ func Test_CreateTemporaryCredentials_WellFormed(t *testing.T) {
 }
 
 // This clientId/accessToken pair is recognized as valid by the testAutheticate endpoint
-var testCreds = &tcclient.Credentials{
-	ClientId:    "tester",
-	AccessToken: "no-secret",
-}
+var testCreds = tcclient.NewPermanentCredentials(
+	"tester",
+	"no-secret",
+	nil,
+)
 
 func checkAuthenticate(t *testing.T, response *auth.TestAuthenticateResponse, err error, expectedClientID string, expectedScopes []string) {
 
@@ -111,7 +114,7 @@ func Test_NamedTempCred(t *testing.T) {
 }
 
 func Test_TempCred_NoClientId(t *testing.T) {
-	baseCreds := tcclient.Credentials{AccessToken: "no-secret"}
+	baseCreds := tcclient.NewPermanentCredentials("", "no-secret", nil)
 	_, err := baseCreds.CreateTemporaryCredentials(1*time.Hour, "s")
 	if err == nil {
 		t.Errorf("expected error")
@@ -119,19 +122,7 @@ func Test_TempCred_NoClientId(t *testing.T) {
 }
 
 func Test_TempCred_NoAccessToken(t *testing.T) {
-	baseCreds := tcclient.Credentials{ClientId: "tester"}
-	_, err := baseCreds.CreateTemporaryCredentials(1*time.Hour, "s")
-	if err == nil {
-		t.Errorf("expected error")
-	}
-}
-
-func Test_TempCred_TempBase(t *testing.T) {
-	baseCreds := tcclient.Credentials{
-		ClientId:    "tester",
-		AccessToken: "no-secret",
-		Certificate: "{}",
-	}
+	baseCreds := tcclient.NewPermanentCredentials("tester", "", nil)
 	_, err := baseCreds.CreateTemporaryCredentials(1*time.Hour, "s")
 	if err == nil {
 		t.Errorf("expected error")

@@ -9,14 +9,14 @@ import (
 )
 
 type TempCredsTestCase struct {
-	Description       string       `json:"description"`
-	PermCreds         *Credentials `json:"permCreds"`
-	Seed              string       `json:"seed"`
-	Start             string       `json:"start"`
-	Expiry            string       `json:"expiry"`
-	TempCredsName     string       `json:"tempCredsName"`
-	TempCredsScopes   []string     `json:"tempCredsScopes"`
-	ExpectedTempCreds *Credentials `json:"expectedTempCreds"`
+	Description       string                `json:"description"`
+	PermCreds         *PermanentCredentials `json:"permCreds"`
+	Seed              string                `json:"seed"`
+	Start             string                `json:"start"`
+	Expiry            string                `json:"expiry"`
+	TempCredsName     string                `json:"tempCredsName"`
+	TempCredsScopes   []string              `json:"tempCredsScopes"`
+	ExpectedTempCreds *TemporaryCredentials `json:"expectedTempCreds"`
 }
 
 func Test_StaticTempCreds(t *testing.T) {
@@ -59,7 +59,7 @@ func testCreds(t *testing.T, tc *TempCredsTestCase) {
 	}
 	cert.Start = start.UnixNano() / 1e6
 	cert.Expiry = expiry.UnixNano() / 1e6
-	cert.updateSignature(permCreds.AccessToken, tempCreds.ClientId)
+	cert.updateSignature(permCreds.AccessToken, tempCreds.ClientID)
 	certBytes, err := json.Marshal(cert)
 	if err != nil {
 		t.Fatalf("Could not convert updated certificate into a string: %s", err)
@@ -68,7 +68,7 @@ func testCreds(t *testing.T, tc *TempCredsTestCase) {
 	expected := tc.ExpectedTempCreds
 	if !reflect.DeepEqual(expected, tempCreds) {
 		t.Logf("Unexpected temp creds generated")
-		t.Logf("Expected:\nAccessToken: %q\nAuthorizedScopes: %q\nClientId: %q\nCertificate: %q", expected.AccessToken, expected.AuthorizedScopes, expected.ClientId, expected.Certificate)
-		t.Errorf("Actual:\nAccessToken: %q\nAuthorizedScopes: %q\nClientId: %q\nCertificate: %q", tempCreds.AccessToken, tempCreds.AuthorizedScopes, tempCreds.ClientId, tempCreds.Certificate)
+		t.Logf("Expected:\nAccessToken: %q\nAuthorizedScopes: %q\nClientId: %q\nCertificate: %q", expected.AccessToken, expected.AuthorizedScopes, expected.ClientID, expected.Certificate)
+		t.Errorf("Actual:\nAccessToken: %q\nAuthorizedScopes: %q\nClientId: %q\nCertificate: %q", tempCreds.AccessToken, tempCreds.AuthorizedScopes, tempCreds.ClientID, tempCreds.Certificate)
 	}
 }

@@ -22,7 +22,7 @@ import (
 //
 // Note, no credentials are needed, so this can be run even on travis-ci.org, for example.
 func TestFindLatestBuildbotTask(t *testing.T) {
-	creds := &tcclient.Credentials{}
+	var creds *tcclient.TemporaryCredentials
 	Index := index.New(creds)
 	Queue := queue.New(creds)
 	itr, _, err := Index.FindTask("buildbot.branches.mozilla-central.linux64.l10n")
@@ -54,13 +54,13 @@ func TestFindLatestBuildbotTask(t *testing.T) {
 
 }
 
-func permaCreds(t *testing.T) *tcclient.Credentials {
-	permaCreds := &tcclient.Credentials{
-		ClientId:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
-		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
-		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
-	}
-	if permaCreds.ClientId == "" || permaCreds.AccessToken == "" {
+func permaCreds(t *testing.T) *tcclient.PermanentCredentials {
+	permaCreds := tcclient.NewPermanentCredentials(
+		os.Getenv("TASKCLUSTER_CLIENT_ID"),
+		os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
+		nil,
+	)
+	if permaCreds.ClientID == "" || permaCreds.AccessToken == "" {
 		t.Skip("Skipping test TestDefineTask since TASKCLUSTER_CLIENT_ID and/or TASKCLUSTER_ACCESS_TOKEN env vars not set")
 	}
 	return permaCreds
@@ -118,15 +118,15 @@ func TestDefineTask(t *testing.T) {
 
 	if err != nil {
 		b := bytes.Buffer{}
-		cs.HttpRequest.Header.Write(&b)
+		cs.HTTPRequest.Header.Write(&b)
 		headers := regexp.MustCompile(`(mac|nonce)="[^"]*"`).ReplaceAllString(b.String(), `$1="***********"`)
-		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HttpRequest.URL, cs.HttpRequest.Method, headers, cs.HttpRequestBody)
+		t.Logf("\n\nRequest sent:\n\nURL: %s\nMethod: %s\nHeaders:\n%v\nBody: %s", cs.HTTPRequest.URL, cs.HTTPRequest.Method, headers, cs.HTTPRequestBody)
 		t.Fatalf("\n\nResponse received:\n\n%s", err)
 	}
 
 	t.Logf("Task https://queue.taskcluster.net/v1/task/%v created successfully", taskID)
 
-	if provisionerID := cs.HttpRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
+	if provisionerID := cs.HTTPRequestObject.(*queue.TaskDefinitionRequest).ProvisionerID; provisionerID != "win-provisioner" {
 		t.Errorf("provisionerId 'win-provisioner' expected but got %s", provisionerID)
 	}
 	if schedulerID := tsr.Status.SchedulerID; schedulerID != "go-test-test-scheduler" {
@@ -138,7 +138,7 @@ func TestDefineTask(t *testing.T) {
 	if state := tsr.Status.State; state != "unscheduled" {
 		t.Errorf("Expected 'state' to be 'unscheduled', but got %s", state)
 	}
-	submittedPayload := cs.HttpRequestBody
+	submittedPayload := cs.HTTPRequestBody
 
 	// only the contents is relevant below - the formatting and order of properties does not matter
 	// since a json comparison is done, not a string comparison...
@@ -211,6 +211,6 @@ func TestDefineTask(t *testing.T) {
 	_, cs, err = myQueue.CancelTask(taskID)
 	if err != nil {
 		t.Logf("Exception thrown cancelling task with temporary credentials!\n\n%s\n\n", err)
-		t.Fatalf("\n\n%s\n", cs.HttpRequest.Header)
+		t.Fatalf("\n\n%s\n", cs.HTTPRequest.Header)
 	}
 }
