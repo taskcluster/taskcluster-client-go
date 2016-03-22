@@ -118,6 +118,15 @@ import (
 
 type ` + api.apiDef.Name + ` tcclient.ConnectionData
 
+// The Abstract` + api.apiDef.Name + ` interface specifies the methods provided
+// by ` + api.apiDef.Name + ` this is useful for mocking instances in tests.
+type Abstract` + api.apiDef.Name + ` interface {`
+	for _, entry := range api.Entries {
+		content += "\n" + entry.signature()
+	}
+	content += `
+}
+
 // Returns a pointer to ` + api.apiDef.Name + `, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
 // url. Authentication can be disabled (for example if you wish to use the
@@ -174,6 +183,17 @@ type APIEntry struct {
 
 	MethodName string
 	Parent     *API
+}
+
+func (entry *APIEntry) signature() string {
+	inputParams, _, _ := entry.getInputParamsAndQueryStringCode()
+
+	responseType := "(error)"
+	if entry.Output != "" {
+		responseType = "(*" + entry.Parent.apiDef.schemas.SubSchema(entry.Output).TypeName + ", error)"
+	}
+
+	return entry.MethodName + "(" + inputParams + ") " + responseType
 }
 
 // Add entry.Input and entry.Output to schemaURLs, if they are set

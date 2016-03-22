@@ -56,7 +56,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/aws-provisioner/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 17 Mar 2016 at 19:11:00 UTC. The code was generated
+// Tue, 22 Mar 2016 at 20:11:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package awsprovisioner
 
@@ -68,6 +68,26 @@ import (
 )
 
 type AwsProvisioner tcclient.ConnectionData
+
+// The AbstractAwsProvisioner interface specifies the methods provided
+// by AwsProvisioner this is useful for mocking instances in tests.
+type AbstractAwsProvisioner interface {
+	CreateWorkerType(workerType string) (*GetWorkerTypeRequest, error)
+	UpdateWorkerType(workerType string) (*GetWorkerTypeRequest, error)
+	WorkerType(workerType string) (*GetWorkerTypeRequest, error)
+	RemoveWorkerType(workerType string) error
+	ListWorkerTypes() (*ListWorkerTypes, error)
+	CreateSecret(token string) error
+	GetSecret(token string) (*GetSecretResponse, error)
+	InstanceStarted(instanceId, token string) error
+	RemoveSecret(token string) error
+	GetLaunchSpecs(workerType string) (*GetAllLaunchSpecsResponse, error)
+	AwsState() error
+	State(workerType string) error
+	Ping() error
+	BackendStatus() error
+	APIReference() error
+}
 
 // Returns a pointer to AwsProvisioner, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred

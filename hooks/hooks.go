@@ -43,7 +43,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/hooks/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 17 Mar 2016 at 19:11:00 UTC. The code was generated
+// Tue, 22 Mar 2016 at 20:11:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package hooks
 
@@ -54,6 +54,19 @@ import (
 )
 
 type Hooks tcclient.ConnectionData
+
+// The AbstractHooks interface specifies the methods provided
+// by Hooks this is useful for mocking instances in tests.
+type AbstractHooks interface {
+	ListHookGroups() (*HookGroups, error)
+	ListHooks(hookGroupId string) (*HookList, error)
+	Hook(hookGroupId, hookId string) (*HookDefinition, error)
+	GetHookStatus(hookGroupId, hookId string) (*HookStatusResponse, error)
+	GetHookSchedule(hookGroupId, hookId string) (*HookScheduleResponse, error)
+	CreateHook(hookGroupId, hookId string) (*HookDefinition, error)
+	UpdateHook(hookGroupId, hookId string) (*HookDefinition, error)
+	RemoveHook(hookGroupId, hookId string) error
+}
 
 // Returns a pointer to Hooks, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred

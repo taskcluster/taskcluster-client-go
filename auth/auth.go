@@ -73,7 +73,7 @@
 //
 // The source code of this go package was auto-generated from the API definition at
 // http://references.taskcluster.net/auth/v1/api.json together with the input and output schemas it references, downloaded on
-// Thu, 17 Mar 2016 at 19:11:00 UTC. The code was generated
+// Tue, 22 Mar 2016 at 20:11:00 UTC. The code was generated
 // by https://github.com/taskcluster/taskcluster-client-go/blob/master/build.sh.
 package auth
 
@@ -85,6 +85,32 @@ import (
 )
 
 type Auth tcclient.ConnectionData
+
+// The AbstractAuth interface specifies the methods provided
+// by Auth this is useful for mocking instances in tests.
+type AbstractAuth interface {
+	ListClients(prefix string) (*ListClientResponse, error)
+	Client(clientId string) (*GetClientResponse, error)
+	CreateClient(clientId string) (*CreateClientResponse, error)
+	ResetAccessToken(clientId string) (*CreateClientResponse, error)
+	UpdateClient(clientId string) (*GetClientResponse, error)
+	EnableClient(clientId string) (*GetClientResponse, error)
+	DisableClient(clientId string) (*GetClientResponse, error)
+	DeleteClient(clientId string) error
+	ListRoles() (*ListRolesResponse, error)
+	Role(roleId string) (*GetRoleResponse, error)
+	CreateRole(roleId string) (*GetRoleResponse, error)
+	UpdateRole(roleId string) (*GetRoleResponse, error)
+	DeleteRole(roleId string) error
+	ExpandScopes() (*SetOfScopes, error)
+	CurrentScopes() (*SetOfScopes, error)
+	AwsS3Credentials(level, bucket, prefix string) (*AWSS3CredentialsResponse, error)
+	AzureTableSAS(account, table string) (*AzureSharedAccessSignatureResponse, error)
+	AuthenticateHawk() (*HawkSignatureAuthenticationResponse, error)
+	TestAuthenticate() (*TestAuthenticateResponse, error)
+	TestAuthenticateGet() (*TestAuthenticateResponse, error)
+	Ping() error
+}
 
 // Returns a pointer to Auth, configured to run against production.  If you
 // wish to point at a different API endpoint url, set BaseURL to the preferred
