@@ -20,7 +20,7 @@
 
     <section class="main-content">
       <h1>
-<a id="taskcluster-client-go" class="anchor" href="#taskcluster-client-go" aria-hidden="true"><span class="octicon octicon-link"></span></a>taskcluster-client-go</h1>
+<a id="taskcluster-client-go" class="anchor" href="#taskcluster-client-go" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>taskcluster-client-go</h1>
 
 <p><img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png">
 <a href="http://travis-ci.org/taskcluster/taskcluster-client-go"><img src="https://travis-ci.org/taskcluster/taskcluster-client-go.svg?branch=master" alt="Build Status"></a>
@@ -35,7 +35,7 @@
 <p>This library provides the following packages to interface with TaskCluster:</p>
 
 <h3>
-<a id="http-apis" class="anchor" href="#http-apis" aria-hidden="true"><span class="octicon octicon-link"></span></a>HTTP APIs</h3>
+<a id="http-apis" class="anchor" href="#http-apis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>HTTP APIs</h3>
 
 <ul>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth">http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth</a></li>
@@ -43,6 +43,7 @@
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/github">http://godoc.org/github.com/taskcluster/taskcluster-client-go/github</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks">http://godoc.org/github.com/taskcluster/taskcluster-client-go/hooks</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/index">http://godoc.org/github.com/taskcluster/taskcluster-client-go/index</a></li>
+<li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/login">http://godoc.org/github.com/taskcluster/taskcluster-client-go/login</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache">http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue">http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler">http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler</a></li>
@@ -50,9 +51,10 @@
 </ul>
 
 <h3>
-<a id="amqp-apis" class="anchor" href="#amqp-apis" aria-hidden="true"><span class="octicon octicon-link"></span></a>AMQP APIs</h3>
+<a id="amqp-apis" class="anchor" href="#amqp-apis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>AMQP APIs</h3>
 
 <ul>
+<li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/authevents">http://godoc.org/github.com/taskcluster/taskcluster-client-go/authevents</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisionerevents">http://godoc.org/github.com/taskcluster/taskcluster-client-go/awsprovisionerevents</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/githubevents">http://godoc.org/github.com/taskcluster/taskcluster-client-go/githubevents</a></li>
 <li><a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents">http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents</a></li>
@@ -61,18 +63,18 @@
 </ul>
 
 <h2>
-<a id="example-programs" class="anchor" href="#example-programs" aria-hidden="true"><span class="octicon octicon-link"></span></a>Example programs</h2>
+<a id="example-programs" class="anchor" href="#example-programs" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Example programs</h2>
 
 <p>To get you started quickly, I have also included some example programs that use both the http services and the amqp services:</p>
 
 <ul>
-<li>This <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth">auth</a> package to query the scopes of a given clientId.</li>
-<li>This <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--ModifyClient">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth">auth</a> package to update an existing clientId with new data.</li>
+<li>This <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth">auth</a> package to query the expiry and expanded scopes of a given clientId.</li>
+<li>This <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--UpdateClient">HTTP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth">auth</a> package to update an existing clientId with a new description and expiry.</li>
 <li>The <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents#example-package--TaskClusterSniffer">AMQP example program</a> demonstrates the use of the <a href="http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents">queueevents</a> package to listen in on Task Cluster tasks being defined and executed.</li>
 </ul>
 
 <h2>
-<a id="building" class="anchor" href="#building" aria-hidden="true"><span class="octicon octicon-link"></span></a>Building</h2>
+<a id="building" class="anchor" href="#building" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Building</h2>
 
 <p>The libraries provided by this client are auto-generated based on the schemas listed under
 <a href="http://references.taskcluster.net/manifest.json">http://references.taskcluster.net/manifest.json</a> combined with the supplementary information stored in
@@ -86,12 +88,12 @@ download several json files and schemas in order to build the library.</p>
 directory.</p>
 
 <h2>
-<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span class="octicon octicon-link"></span></a>Contributing</h2>
+<a id="contributing" class="anchor" href="#contributing" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Contributing</h2>
 
 <p>Contributions are welcome. Please fork, and issue a Pull Request back with an explanation of your changes.</p>
 
 <h2>
-<a id="travis" class="anchor" href="#travis" aria-hidden="true"><span class="octicon octicon-link"></span></a>Travis</h2>
+<a id="travis" class="anchor" href="#travis" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Travis</h2>
 
 <p>Travis build <a href="http://travis-ci.org/taskcluster/taskcluster-client-go">success/failure messages</a> are posted to irc channel #taskcluster-bots on irc.mozilla.org:6697.</p>
 
