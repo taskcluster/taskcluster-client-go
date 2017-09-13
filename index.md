@@ -1,5 +1,7 @@
 # taskcluster-client-go
-<img hspace="20" align="left" src="https://tools.taskcluster.net/lib/assets/taskcluster-120.png" />
+
+[![logo](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)](https://tools.taskcluster.net/b2d854df0391f8b777f39a486ebbc868.png)
+
 [![Build Status](https://travis-ci.org/taskcluster/taskcluster-client-go.svg?branch=master)](http://travis-ci.org/taskcluster/taskcluster-client-go)
 [![GoDoc](https://godoc.org/github.com/taskcluster/taskcluster-client-go?status.svg)](https://godoc.org/github.com/taskcluster/taskcluster-client-go)
 [![Coverage Status](https://coveralls.io/repos/taskcluster/taskcluster-client-go/badge.svg?branch=master&service=github)](https://coveralls.io/github/taskcluster/taskcluster-client-go?branch=master)
@@ -9,7 +11,7 @@ A go (golang) port of taskcluster-client.
 
 Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster-client-go).
 
-This library provides the following packages to interface with TaskCluster:
+This library provides the following packages to interface with Taskcluster:
 
 ### HTTP APIs
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth
@@ -21,7 +23,6 @@ This library provides the following packages to interface with TaskCluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/notify
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecache
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queue
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/scheduler
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/secrets
 
 ### AMQP APIs
@@ -30,7 +31,6 @@ This library provides the following packages to interface with TaskCluster:
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/githubevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/purgecacheevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents
-* http://godoc.org/github.com/taskcluster/taskcluster-client-go/schedulerevents
 * http://godoc.org/github.com/taskcluster/taskcluster-client-go/treeherderevents
 
 ## Example programs
@@ -39,7 +39,7 @@ To get you started quickly, I have also included some example programs that use 
 
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--Scopes) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to query the expiry and expanded scopes of a given clientId.
 * This [HTTP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth#example-package--UpdateClient) demonstrates the use of the [auth](http://godoc.org/github.com/taskcluster/taskcluster-client-go/auth) package to update an existing clientId with a new description and expiry.
-* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents#example-package--TaskClusterSniffer) demonstrates the use of the [queueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
+* The [AMQP example program](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents#example-package--TaskclusterSniffer) demonstrates the use of the [queueevents](http://godoc.org/github.com/taskcluster/taskcluster-client-go/queueevents) package to listen in on Task Cluster tasks being defined and executed.
 
 ## Building
 The libraries provided by this client are auto-generated based on the schemas listed under
