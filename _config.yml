@@ -1,0 +1,8 @@
+title: Taskcluster-client-go
+description: A go (golang) port of taskcluster-client
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-cayman
+
+gems:
+  - jekyll-mentions
