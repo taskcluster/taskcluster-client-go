@@ -40,10 +40,12 @@ type CallSummary struct {
 	HTTPResponseBody string
 	// Keep a record of how many http requests were attempted
 	Attempts int
+	// Keep a copy of the URL that was used
+	URL string
 }
 
 func (cs *CallSummary) String() string {
-	return fmt.Sprintf("\nCALL SUMMARY\n============\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
+	return fmt.Sprintf("\nCALL SUMMARY\n============\nURL: %s\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.URL, cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
 }
 
 type APICall struct {
@@ -92,6 +94,7 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
+		callSummary.URL = u.String()
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
