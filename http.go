@@ -40,14 +40,10 @@ type CallSummary struct {
 	HTTPResponseBody string
 	// Keep a record of how many http requests were attempted
 	Attempts int
-	// Keep a copy of the URL that was used
-	URL string
-	// Keep a copy of the HTTP Method used
-	Method string
 }
 
 func (cs *CallSummary) String() string {
-	return fmt.Sprintf("\nCALL SUMMARY\n============\n%s %s\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.Method, cs.URL, cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
+	return fmt.Sprintf("\nCALL SUMMARY\n============\n%s %s\nRequest Headers:\n%#v\nRequest Body:\n%v\nResponse Headers:\n%#v\nResponse Body:\n%v\nAttempts: %v", cs.HTTPRequest.Method, cs.HTTPRequest.URL, cs.HTTPRequest.Header, cs.HTTPRequestBody, cs.HTTPResponse.Header, cs.HTTPResponseBody, cs.Attempts)
 }
 
 type APICall struct {
@@ -88,7 +84,6 @@ func setURL(client *Client, route string, query url.Values) (u *url.URL, err err
 func (client *Client) Request(rawPayload []byte, method, route string, query url.Values) (*CallSummary, error) {
 	callSummary := new(CallSummary)
 	callSummary.HTTPRequestBody = string(rawPayload)
-	callSummary.Method = method
 
 	// function to perform http request - we call this using backoff library to
 	// have exponential backoff in case of intermittent failures (e.g. network
@@ -97,7 +92,6 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
 		u, err := setURL(client, route, query)
-		callSummary.URL = u.String()
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
