@@ -75,29 +75,23 @@ type Github tcclient.Client
 //  if err != nil {
 //  	// handle errors...
 //  }
-//
-// If authentication is not required, use NewNoAuth() instead.
-func New(credentials *tcclient.Credentials) (*Github, error) {
-	if credentials == nil {
-		credentials = tcclient.CredentialsFromEnvVars()
-	}
-	err := credentials.Validate()
-	myGithub := Github(tcclient.Client{
+
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *Github {
+	return &Github{
 		Credentials:  credentials,
 		BaseURL:      DefaultBaseURL,
-		Authenticate: true,
-	})
-	return &myGithub, err
+		Authenticate: credentials != nil,
+	}
 }
 
-// NewNoAuth returns a Github client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *Github {
-	myGithub := Github(tcclient.Client{
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *Github {
+	return &Github{
+		Credentials:  tcclient.CredentialsFromEnvVars(),
 		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &myGithub
+		Authenticate: true,
+	}
 }
 
 // Stability: *** EXPERIMENTAL ***

@@ -58,7 +58,55 @@ type (
 	HealthOfTheEC2Account struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth
-		RequestHealth []json.RawMessage `json:"requestHealth,omitempty"`
+		RequestHealth []struct {
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/az
+			Az string `json:"az,omitempty"`
+
+			// The number of calls failed due to a misconfiguration of the worker type.  Due to the large number of error codes the EC2 API might return, this is a best effort categorization.  It covers codes which are like "Invalid%" using SQL pattern mattching on the codes from https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html It is not categorized by which field was invalid in this response
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/configuration_issue
+			Configuration_Issue int `json:"configuration_issue,omitempty"`
+
+			// The total number of calls which failed, inrespective of why
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/failed
+			Failed int `json:"failed,omitempty"`
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/instanceType
+			InstanceType string `json:"instanceType,omitempty"`
+
+			// Number of runInstances calls which have failed because there aren't
+			// enough hosts for the resources to be allocated.
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/insufficient_capacity
+			Insufficient_Capacity int `json:"insufficient_capacity,omitempty"`
+
+			// The number of calls which failed due to a limit being exceeded.
+			// Due to the large number of error codes the EC2 API might return,
+			// this is a best effort categorization.  It covers codes which are
+			// like "%LimitExceeded" using SQL pattern mattching, but not
+			// RequestLimitExceeded on the codes from
+			// https://docs.aws.amazon.com/AWSEC2/latest/APIReference/errors-overview.html
+			// It is not categorized by which limit was exceeded in this response
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/limit_exceeded
+			Limit_Exceeded int `json:"limit_exceeded,omitempty"`
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/region
+			Region string `json:"region,omitempty"`
+
+			// The number of instances which have been requested successfully
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/successful
+			Successful int `json:"successful,omitempty"`
+
+			// Number of calls which have been throttled in this region.  These
+			// are errors with the code RequestLimitExceeded.
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/requestHealth/items/properties/throttled_calls
+			Throttled_Calls int `json:"throttled_calls,omitempty"`
+		} `json:"requestHealth,omitempty"`
 
 		// An overview of currently running instances
 		//
@@ -77,11 +125,76 @@ type (
 			// The number of currently running instances in this configuration
 			//
 			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/running/items/properties/running
-			Running int64 `json:"running,omitempty"`
+			Running int `json:"running,omitempty"`
 		} `json:"running,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth
-		TerminationHealth []json.RawMessage `json:"terminationHealth,omitempty"`
+		TerminationHealth []struct {
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/az
+			Az string `json:"az,omitempty"`
+
+			// A count of the instances which were shutdown cleanty.  For the
+			// purposes of this API, a clean shutdown is one which was initiated
+			// by us.  This includes API shutdowns or workers ending themselves.
+			// It does not mean the actual workload ran successfully, rather that
+			// we chose to terminate it
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/clean_shutdown
+			Clean_Shutdown int `json:"clean_shutdown,omitempty"`
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/instanceType
+			InstanceType string `json:"instanceType,omitempty"`
+
+			// The number of instances which were terminated due to a lack of
+			// capacity.  More than likely, this will always be zero because the
+			// new spot service is now synchronous, so runInstances calls should
+			// fail
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/insufficient_capacity
+			Insufficient_Capacity int `json:"insufficient_capacity,omitempty"`
+
+			// The number of instances which were terminated due to not being able
+			// to find the AMI
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/missing_ami
+			Missing_Ami int `json:"missing_ami,omitempty"`
+
+			// The number of terminations which we cannot find a code.  This means
+			// we cannot determine whether this should be classified as a good or
+			// bad outcome.  The specific reason is that the code which polls for
+			// termination reason was not able to run before the EC2 API dropped
+			// the instance from its database
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/no_code
+			No_Code int `json:"no_code,omitempty"`
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/region
+			Region string `json:"region,omitempty"`
+
+			// The number of instances which were killed by the spot service
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/spot_kill
+			Spot_Kill int `json:"spot_kill,omitempty"`
+
+			// The number of instances which failed to start, either because of an
+			// error on our side or on the EC2 side
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/startup_failed
+			Startup_Failed int `json:"startup_failed,omitempty"`
+
+			// The number of terminations which have a code which this code does
+			// not recognize
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/unknown_code
+			Unknown_Code int `json:"unknown_code,omitempty"`
+
+			// The number of instances which were terminated due to exceeding the
+			// limit for number of ebs volumes
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/health.json#/properties/terminationHealth/items/properties/volume_limit_exceeded
+			Volume_Limit_Exceeded int `json:"volume_limit_exceeded,omitempty"`
+		} `json:"terminationHealth,omitempty"`
 	}
 
 	// A list of prices for EC2
@@ -169,39 +282,33 @@ type (
 		// having some schema keys set to ensure certain values are either present
 		// or absent
 		//
-		// Defined properties:
-		//
-		//  struct {
-		//
-		//  	// This is the AMI Identifier for this spot request.  This image must
-		//  	// already exist and must be in the region of the request.  Note that
-		//  	// AMI images are per-region, so you must copy or regenerate the image
-		//  	// for each region.
-		//  	//
-		//  	// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
-		//  	ImageID string `json:"ImageId,omitempty"`
-		//
-		//  	// The instance type to use for this spot request
-		//  	//
-		//  	// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
-		//  	InstanceType string `json:"InstanceType,omitempty"`
-		//
-		//  	// A valid EC2 KeyPair name.  The KeyPair must already exist
-		//  	//
-		//  	// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
-		//  	KeyName string `json:"KeyName,omitempty"`
-		//
-		//  	// This is a list of the security groups this image will use.  These
-		//  	// groups must already exist in the region.
-		//  	//
-		//  	// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
-		//  	SecurityGroups []string `json:"SecurityGroups,omitempty"`
-		//  }
-		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo
-		LaunchInfo json.RawMessage `json:"LaunchInfo,omitempty"`
+		LaunchInfo struct {
+
+			// This is the AMI Identifier for this spot request.  This image must
+			// already exist and must be in the region of the request.  Note that
+			// AMI images are per-region, so you must copy or regenerate the image
+			// for each region.
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/ImageId
+			ImageID string `json:"ImageId,omitempty"`
+
+			// The instance type to use for this spot request
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/InstanceType
+			InstanceType string `json:"InstanceType,omitempty"`
+
+			// A valid EC2 KeyPair name.  The KeyPair must already exist
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/KeyName
+			KeyName string `json:"KeyName,omitempty"`
+
+			// This is a list of the security groups this image will use.  These
+			// groups must already exist in the region.
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/run-instance-request.json#/properties/LaunchInfo/properties/SecurityGroups
+			SecurityGroups []string `json:"SecurityGroups,omitempty"`
+		} `json:"LaunchInfo,omitempty"`
 
 		// The EC2 region in which this spot request is to be made.  This should be
 		// the lower case api-identifier.  For example `us-east-1`
@@ -235,7 +342,20 @@ type (
 	OverviewOfComputationalResources struct {
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending
-		Pending []json.RawMessage `json:"pending,omitempty"`
+		Pending []struct {
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/count
+			Count float64 `json:"count,omitempty"`
+
+			// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/instanceType
+			InstanceType string `json:"instanceType,omitempty"`
+
+			// Possible values:
+			//   * "instance"
+			//
+			// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/pending/items/properties/type
+			Type string `json:"type,omitempty"`
+		} `json:"pending,omitempty"`
 
 		// See http://schemas.taskcluster.net/ec2-manager/v1/worker-type-resources.json#/properties/running
 		Running []interface{} `json:"running,omitempty"`

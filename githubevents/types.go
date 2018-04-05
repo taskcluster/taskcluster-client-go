@@ -32,8 +32,6 @@ type (
 
 		// Metadata describing the pull request.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
@@ -50,7 +48,7 @@ type (
 		// Maximum:    10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-pull-request-message.json#/properties/installationId
-		InstallationID int64 `json:"installationId"`
+		InstallationID int `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//
@@ -86,8 +84,6 @@ type (
 
 		// Metadata describing the push.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
@@ -104,7 +100,7 @@ type (
 		// Max length: 10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-push-message.json#/properties/installationId
-		InstallationID int64 `json:"installationId"`
+		InstallationID int `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//
@@ -140,8 +136,6 @@ type (
 
 		// Metadata describing the release.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/details
 		Details json.RawMessage `json:"details,omitempty"`
 
@@ -158,7 +152,7 @@ type (
 		// Maximum:    10000000000
 		//
 		// See http://schemas.taskcluster.net/github/v1/github-release-message.json#/properties/installationId
-		InstallationID int64 `json:"installationId"`
+		InstallationID int `json:"installationId"`
 
 		// The GitHub `organization` which had an event.
 		//

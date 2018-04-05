@@ -94,29 +94,23 @@ type AwsProvisioner tcclient.Client
 //  if err != nil {
 //  	// handle errors...
 //  }
-//
-// If authentication is not required, use NewNoAuth() instead.
-func New(credentials *tcclient.Credentials) (*AwsProvisioner, error) {
-	if credentials == nil {
-		credentials = tcclient.CredentialsFromEnvVars()
-	}
-	err := credentials.Validate()
-	awsProvisioner := AwsProvisioner(tcclient.Client{
+
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *AwsProvisioner {
+	return &AwsProvisioner{
 		Credentials:  credentials,
 		BaseURL:      DefaultBaseURL,
-		Authenticate: true,
-	})
-	return &awsProvisioner, err
+		Authenticate: credentials != nil,
+	}
 }
 
-// NewNoAuth returns an AwsProvisioner client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *AwsProvisioner {
-	awsProvisioner := AwsProvisioner(tcclient.Client{
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *AwsProvisioner {
+	return &AwsProvisioner{
+		Credentials:  tcclient.CredentialsFromEnvVars(),
 		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &awsProvisioner
+		Authenticate: true,
+	}
 }
 
 // Return a list of worker types, including some summary information about

@@ -76,29 +76,23 @@ type Queue tcclient.Client
 //  if err != nil {
 //  	// handle errors...
 //  }
-//
-// If authentication is not required, use NewNoAuth() instead.
-func New(credentials *tcclient.Credentials) (*Queue, error) {
-	if credentials == nil {
-		credentials = tcclient.CredentialsFromEnvVars()
-	}
-	err := credentials.Validate()
-	myQueue := Queue(tcclient.Client{
+
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *Queue {
+	return &Queue{
 		Credentials:  credentials,
 		BaseURL:      DefaultBaseURL,
-		Authenticate: true,
-	})
-	return &myQueue, err
+		Authenticate: credentials != nil,
+	}
 }
 
-// NewNoAuth returns a Queue client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *Queue {
-	myQueue := Queue(tcclient.Client{
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *Queue {
+	return &Queue{
+		Credentials:  tcclient.CredentialsFromEnvVars(),
 		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &myQueue
+		Authenticate: true,
+	}
 }
 
 // This end-point will return the task-definition. Notice that the task
