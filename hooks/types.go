@@ -18,8 +18,6 @@ type (
 		// The error that occurred when firing the task.  This is typically,
 		// but not always, an API error message.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-status.json#/properties/lastFire/oneOf[1]/properties/error
 		Error json.RawMessage `json:"error"`
 
@@ -111,17 +109,10 @@ type (
 		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
 		// a task definition that is submitted to the Queue service.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/task
 		Task json.RawMessage `json:"task"`
 
-		// Default:    {
-		//               "additionalProperties": false,
-		//               "type": "object"
-		//             }
-		//
-		// Additional properties allowed
+		// Default:    map["additionalProperties":%!q(bool=false) "type":"object"]
 		//
 		// See http://schemas.taskcluster.net/hooks/v1/create-hook-request.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema,omitempty"`
@@ -203,13 +194,9 @@ type (
 		// as described in https://docs.taskcluster.net/reference/core/taskcluster-hooks/docs/firing-hooks to produce
 		// a task definition that is submitted to the Queue service.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/task
 		Task json.RawMessage `json:"task"`
 
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/hooks/v1/hook-definition.json#/properties/triggerSchema
 		TriggerSchema json.RawMessage `json:"triggerSchema"`
 	}
@@ -350,7 +337,7 @@ type (
 			// Maximum:    999
 			//
 			// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/retriesLeft
-			RetriesLeft int64 `json:"retriesLeft"`
+			RetriesLeft int `json:"retriesLeft"`
 
 			// List of runs, ordered so that index `i` has `runId == i`
 			//
@@ -404,7 +391,7 @@ type (
 				// Maximum:    1000
 				//
 				// See http://schemas.taskcluster.net/hooks/v1/task-status.json#/properties/status/properties/runs/items/properties/runId
-				RunID int64 `json:"runId"`
+				RunID int `json:"runId"`
 
 				// Date-time at which this run was scheduled, ie. when the run was
 				// created in state `pending`.
@@ -514,8 +501,6 @@ type (
 	}
 
 	// Trigger context
-	//
-	// Additional properties allowed
 	//
 	// See http://schemas.taskcluster.net/hooks/v1/trigger-context.json#
 	TriggerContext json.RawMessage

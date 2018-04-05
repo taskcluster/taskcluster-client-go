@@ -18,10 +18,7 @@ import (
 func TestSignedURLPermCredsAuthScopes(t *testing.T) {
 	permaCreds := permaCreds(t)
 	permaCreds.AuthorizedScopes = []string{"queue:get-artifact:private/build/sources.xml"}
-	myQueue, err := queue.New(permaCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue := queue.New(permaCreds)
 	createAndTestExampleSignedURL(myQueue, t)
 }
 
@@ -31,10 +28,7 @@ func TestSignedURLPermCredsAuthScopes(t *testing.T) {
 // and that the signed URL returns the protected content when queried.
 func TestSignedURLPermCreds(t *testing.T) {
 	permaCreds := permaCreds(t)
-	myQueue, err := queue.New(permaCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue := queue.New(permaCreds)
 	createAndTestExampleSignedURL(myQueue, t)
 }
 
@@ -45,10 +39,7 @@ func TestSignedURLPermCreds(t *testing.T) {
 func TestBadAuthScopesSignedURL(t *testing.T) {
 	permaCreds := permaCreds(t)
 	permaCreds.AuthorizedScopes = []string{"queue:task-priority:high"}
-	myQueue, err := queue.New(permaCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue := queue.New(permaCreds)
 	signedURL, err := myQueue.GetArtifact_SignedURL("X_WYg5S6QvKqMmmAgGo8ng", "0", "private/build/sources.xml", time.Second*30)
 	if err != nil {
 		t.Fatalf("Exception thrown signing URL\n%s", err)
@@ -79,10 +70,7 @@ func TestSignedURLTempCreds(t *testing.T) {
 	if err != nil {
 		t.Fatal("Exception creating temporary credentials")
 	}
-	myQueue, err := queue.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	myQueue := queue.New(tempCreds)
 	createAndTestExampleSignedURL(myQueue, t)
 }
 

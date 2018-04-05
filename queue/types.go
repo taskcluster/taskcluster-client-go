@@ -109,7 +109,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/contentLength
-		ContentLength int64 `json:"contentLength"`
+		ContentLength int `json:"contentLength"`
 
 		// The complete SHA256 value of the entire artifact.  This must be the
 		// SHA256 of the file which is to be uploaded.  For single part uploads,
@@ -173,7 +173,7 @@ type (
 			// Mininum:    0
 			//
 			// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/parts/items/properties/size
-			Size int64 `json:"size,omitempty"`
+			Size int `json:"size,omitempty"`
 		} `json:"parts,omitempty"`
 
 		// Artifact storage type, in this case `'blob'`
@@ -191,7 +191,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/post-artifact-request.json#/oneOf[0]/properties/transferLength
-		TransferLength int64 `json:"transferLength,omitempty"`
+		TransferLength int `json:"transferLength,omitempty"`
 
 		// This is the sha256 of the bytes transfered across the wire to the
 		// backing datastore.  If specified, it represents the
@@ -220,7 +220,7 @@ type (
 		// Maximum:    32
 		//
 		// See http://schemas.taskcluster.net/queue/v1/claim-work-request.json#/properties/tasks
-		Tasks int64 `json:"tasks"`
+		Tasks int `json:"tasks"`
 
 		// Identifier for group that worker claiming the task is a part of.
 		//
@@ -300,7 +300,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/runId
-			RunID int64 `json:"runId"`
+			RunID int `json:"runId"`
 
 			// See http://schemas.taskcluster.net/queue/v1/claim-work-response.json#/properties/tasks/items/properties/status
 			Status TaskStatusStructure `json:"status"`
@@ -361,7 +361,7 @@ type (
 		// Mininum:    0
 		//
 		// See http://schemas.taskcluster.net/queue/v1/pending-tasks-response.json#/properties/pendingTasks
-		PendingTasks int64 `json:"pendingTasks"`
+		PendingTasks int `json:"pendingTasks"`
 
 		// Unique identifier for the provisioner
 		//
@@ -787,7 +787,7 @@ type (
 				// Maximum:    1000
 				//
 				// See http://schemas.taskcluster.net/queue/v1/list-workers-response.json#/properties/workers/items/properties/latestTask/properties/runId
-				RunID int64 `json:"runId"`
+				RunID int `json:"runId"`
 
 				// Unique task identifier, this is UUID encoded as
 				// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and
@@ -1305,7 +1305,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/runId
-		RunID int64 `json:"runId"`
+		RunID int `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-claim-response.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -1382,9 +1382,7 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
-		// Default:    {}
-		//
-		// Additional properties allowed
+		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/extra
 		Extra json.RawMessage `json:"extra,omitempty"`
@@ -1432,8 +1430,6 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		//
-		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
@@ -1493,7 +1489,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/retries
-		Retries int64 `json:"retries,omitempty"`
+		Retries int `json:"retries,omitempty"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		// **Task submitter required scopes** `queue:route:<route>` for
@@ -1533,12 +1529,10 @@ type (
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
 		//
-		// Default:    {}
-
-		// Max length: 4096
+		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/queue/v1/create-task-request.json#/properties/tags
-		Tags map[string]string `json:"tags,omitempty"`
+		Tags json.RawMessage `json:"tags,omitempty"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -1602,9 +1596,7 @@ type (
 		// reusable services. **Warning**, do not stuff large data-sets in here,
 		// task definitions should not take-up multiple MiBs.
 		//
-		// Default:    {}
-		//
-		// Additional properties allowed
+		// Default:    map[]
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/extra
 		Extra json.RawMessage `json:"extra"`
@@ -1652,8 +1644,6 @@ type (
 		// Task-specific payload following worker-specific format. For example the
 		// `docker-worker` requires keys like: `image`, `commands` and
 		// `features`. Refer to the documentation of `docker-worker` for details.
-		//
-		// Additional properties allowed
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/payload
 		Payload json.RawMessage `json:"payload"`
@@ -1706,7 +1696,7 @@ type (
 		// Maximum:    49
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/retries
-		Retries int64 `json:"retries"`
+		Retries int `json:"retries"`
 
 		// List of task specific routes, AMQP messages will be CC'ed to these routes.
 		//
@@ -1737,11 +1727,9 @@ type (
 		// tasks can be classified by. You can also think of strings here as
 		// candidates for formal meta-data. Something like
 		// `purpose: 'build' || 'test'` is a good example.
-
-		// Max length: 4096
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task.json#/properties/tags
-		Tags map[string]string `json:"tags"`
+		Tags json.RawMessage `json:"tags"`
 
 		// Identifier for a group of tasks scheduled together with this task, by
 		// scheduler identified by `schedulerId`. For tasks scheduled by the
@@ -1869,7 +1857,7 @@ type (
 		// Maximum:    1000
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/runId
-		RunID int64 `json:"runId"`
+		RunID int `json:"runId"`
 
 		// See http://schemas.taskcluster.net/queue/v1/task-reclaim-response.json#/properties/status
 		Status TaskStatusStructure `json:"status"`
@@ -1943,7 +1931,7 @@ type (
 		// Maximum:    999
 		//
 		// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/retriesLeft
-		RetriesLeft int64 `json:"retriesLeft"`
+		RetriesLeft int `json:"retriesLeft"`
 
 		// List of runs, ordered so that index `i` has `runId == i`
 		//
@@ -1999,7 +1987,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/task-status.json#/properties/runs/items/properties/runId
-			RunID int64 `json:"runId"`
+			RunID int `json:"runId"`
 
 			// Date-time at which this run was scheduled, ie. when the run was
 			// created in state `pending`.
@@ -2220,7 +2208,7 @@ type (
 			// Maximum:    1000
 			//
 			// See http://schemas.taskcluster.net/queue/v1/worker-response.json#/properties/recentTasks/items/properties/runId
-			RunID int64 `json:"runId,omitempty"`
+			RunID int `json:"runId,omitempty"`
 
 			// Unique task identifier, this is UUID encoded as
 			// [URL-safe base64](http://tools.ietf.org/html/rfc4648#section-5) and

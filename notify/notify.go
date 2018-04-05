@@ -67,29 +67,23 @@ type Notify tcclient.Client
 //  if err != nil {
 //  	// handle errors...
 //  }
-//
-// If authentication is not required, use NewNoAuth() instead.
-func New(credentials *tcclient.Credentials) (*Notify, error) {
-	if credentials == nil {
-		credentials = tcclient.CredentialsFromEnvVars()
-	}
-	err := credentials.Validate()
-	myNotify := Notify(tcclient.Client{
+
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *Notify {
+	return &Notify{
 		Credentials:  credentials,
 		BaseURL:      DefaultBaseURL,
-		Authenticate: true,
-	})
-	return &myNotify, err
+		Authenticate: credentials != nil,
+	}
 }
 
-// NewNoAuth returns a Notify client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *Notify {
-	myNotify := Notify(tcclient.Client{
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *Notify {
+	return &Notify{
+		Credentials:  tcclient.CredentialsFromEnvVars(),
 		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &myNotify
+		Authenticate: true,
+	}
 }
 
 // Stability: *** EXPERIMENTAL ***

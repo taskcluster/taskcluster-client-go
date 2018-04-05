@@ -159,29 +159,23 @@ type Index tcclient.Client
 //  if err != nil {
 //  	// handle errors...
 //  }
-//
-// If authentication is not required, use NewNoAuth() instead.
-func New(credentials *tcclient.Credentials) (*Index, error) {
-	if credentials == nil {
-		credentials = tcclient.CredentialsFromEnvVars()
-	}
-	err := credentials.Validate()
-	myIndex := Index(tcclient.Client{
+
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *Index {
+	return &Index{
 		Credentials:  credentials,
 		BaseURL:      DefaultBaseURL,
-		Authenticate: true,
-	})
-	return &myIndex, err
+		Authenticate: credentials != nil,
+	}
 }
 
-// NewNoAuth returns an Index client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *Index {
-	myIndex := Index(tcclient.Client{
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *Index {
+	return &Index{
+		Credentials:  tcclient.CredentialsFromEnvVars(),
 		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &myIndex
+		Authenticate: true,
+	}
 }
 
 // Find a task by index path, returning the highest-rank task with that path. If no

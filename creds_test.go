@@ -70,10 +70,7 @@ func checkAuthenticate(t *testing.T, response *auth.TestAuthenticateResponse, er
 }
 
 func Test_PermaCred(t *testing.T) {
-	client, err := auth.New(testCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(testCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:this"},
@@ -88,10 +85,7 @@ func Test_TempCred(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	client, err := auth.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(tempCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -107,10 +101,7 @@ func Test_NamedTempCred(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	client, err := auth.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(tempCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:jimmy"},
 		RequiredScopes: []string{"scope:1"},
@@ -157,10 +148,7 @@ func Test_TempCred_TooLong(t *testing.T) {
 func Test_AuthorizedScopes(t *testing.T) {
 	authCreds := *testCreds
 	authCreds.AuthorizedScopes = []string{"scope:1", "scope:3"}
-	client, err := auth.New(&authCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(&authCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -176,10 +164,7 @@ func Test_TempCredWithAuthorizedScopes(t *testing.T) {
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"}
-	client, err := auth.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(tempCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*"},
 		RequiredScopes: []string{"scope:1"},
@@ -196,10 +181,7 @@ func Test_NamedTempCredWithAuthorizedScopes(t *testing.T) {
 		return
 	}
 	tempCreds.AuthorizedScopes = []string{"scope:1"} // note: no create-client
-	client, err := auth.New(tempCreds)
-	if err != nil {
-		t.Fatalf("%v\n", err)
-	}
+	client := auth.New(tempCreds)
 	response, err := client.TestAuthenticate(&auth.TestAuthenticateRequest{
 		ClientScopes:   []string{"scope:*", "auth:create-client:j*"},
 		RequiredScopes: []string{"scope:1"},

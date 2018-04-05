@@ -47,8 +47,6 @@ type (
 
 		// IRC message to send as plain text.
 		//
-		// Additional properties allowed
-		//
 		// See http://schemas.taskcluster.net/notify/v1/pulse-request.json#/properties/message
 		Message json.RawMessage `json:"message"`
 
