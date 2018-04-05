@@ -189,29 +189,23 @@ type ` + api.apiDef.Name + ` tcclient.Client
 	content += "//  if err != nil {\n"
 	content += "//  	// handle errors...\n"
 	content += "//  }\n"
-	content += "//\n"
-	content += "// If authentication is not required, use NewNoAuth() instead.\n"
-	content += "func New(credentials *tcclient.Credentials) (*" + api.apiDef.Name + ", error) {\n"
-	content += "\tif credentials == nil {\n"
-	content += "\t\tcredentials = tcclient.CredentialsFromEnvVars()\n"
-	content += "\t}\n"
-	content += "\terr := credentials.Validate()\n"
-	content += "\t" + exampleVarName + " := " + api.apiDef.Name + "(tcclient.Client{\n"
-	content += "\t\tCredentials: credentials,\n"
-	content += "\t\tBaseURL: DefaultBaseURL,\n"
-	content += "\t\tAuthenticate: true,\n"
-	content += "\t})\n"
-	content += "\treturn &" + exampleVarName + ", err\n"
-	content += "}\n"
-	content += "\n"
-	content += `// NewNoAuth returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client with authentication disabled. This is
-// useful when calling taskcluster APIs that do not require authorization.
-func NewNoAuth() *` + api.apiDef.Name + ` {
-	` + exampleVarName + ` := ` + api.apiDef.Name + `(tcclient.Client{
-		BaseURL:      DefaultBaseURL,
-		Authenticate: false,
-	})
-	return &` + exampleVarName + `
+	content += `
+// New creates a new client, if nil is given requests will be unauthenticated.
+func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
+	return &` + api.apiDef.Name + `{
+		Credentials: credentials,
+		BaseURL: DefaultBaseURL,
+		Authenticate: credentials != nil,
+	}
+}
+
+// NewFromEnv creates a new client with credentials extract from environment
+func NewFromEnv(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
+	return &` + api.apiDef.Name + `{
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		BaseURL: DefaultBaseURL,
+		Authenticate: true,
+	}
 }
 
 `
