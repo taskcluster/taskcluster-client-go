@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	hawk "github.com/tent/hawk-go"
 )
 
@@ -80,10 +81,11 @@ type ReducedHTTPClient interface {
 var defaultHTTPClient ReducedHTTPClient = &http.Client{}
 
 // utility function to create a URL object based on given data
-func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
-	u, err = url.Parse(client.BaseURL + route)
+func (client *Client) URL(path string, query url.Values) (u *url.URL, err error) {
+	urlStr := tcurls.API(client.RootURL, client.Service, client.Version, path)
+	u, err = url.Parse(urlStr)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", client.BaseURL+route, client.BaseURL, err)
+		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) set correctly?\n%v\n", urlStr, client.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -105,13 +107,13 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 	httpCall := func() (*http.Response, error, error) {
 		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
-		u, err := setURL(client, route, query)
+		u, err := client.URL(route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), client.BaseURL, err)
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the Root URL (%v) set correctly?\n%v\n", u.String(), client.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
@@ -246,7 +248,7 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 // query string parameters, if any, and duration is the amount of time that the
 // signed URL should remain valid for.
 func (client *Client) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
-	u, err = setURL(client, route, query)
+	u, err = client.URL(route, query)
 	if err != nil {
 		return
 	}

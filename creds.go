@@ -51,13 +51,19 @@ func (creds *Credentials) String() string {
 // required for all HTTP operations.
 type Client struct {
 	Credentials *Credentials
-	// The URL of the API endpoint to hit.
-	// For example, "https://auth.taskcluster.net/v1" for production auth service.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
+	// The root URL of the taskcluster deployment.  For example,
+	// "https://taskcluster.net" for mozilla production instance.
+	RootURL string
+	// Name of service as it appears in the taskcluster deployment
+	// manifest.json, e.g. "queue" / "auth" / "awsprovisioner" etc.
+	Service string
+	// Version of service, including 'v' prefix, e.g. "v1".
+	Version string
+	// Whether authentication is enabled (e.g. set to 'false' when using
+	// taskcluster-proxy)
 	Authenticate bool
-	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
-	// the DefaultHTTPClient.
+	// HTTPClient is a ReducedHTTPClient to be used for the http call instead
+	// of the DefaultHTTPClient.
 	HTTPClient ReducedHTTPClient
 	// Context that aborts all requests with this client
 	Context context.Context

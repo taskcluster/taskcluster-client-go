@@ -267,9 +267,7 @@ func main() {
 			`echo Hello World!`,
 		},
 		Env: *envJSON,
-		Features: struct {
-			ChainOfTrust bool `json:"chainOfTrust,omitempty"`
-		}{
+		Features: FeatureFlags {
 			ChainOfTrust: false,
 		},
 		MaxRunTime: 60,
@@ -285,12 +283,7 @@ func main() {
 		Dependencies: []string{},
 		Expires:      tcclient.Time(created.Add(time.Hour * 24)),
 		Extra:        json.RawMessage("{}"),
-		Metadata: struct {
-			Description string `json:"description"`
-			Name        string `json:"name"`
-			Owner       string `json:"owner"`
-			Source      string `json:"source"`
-		}{
+		Metadata: tcqueue.TaskMetadata {
 			Description: "xxxx",
 			Name:        "xxxx",
 			Owner:       "pmoore@mozilla.com",

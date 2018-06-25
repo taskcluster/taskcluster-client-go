@@ -44,7 +44,7 @@ import (
 )
 
 const (
-	DefaultBaseURL = "localhost:5555/v1"
+	DefaultBaseURL = "https://ec2-manager.taskcluster.net/v1"
 )
 
 type EC2Manager tcclient.Client
