@@ -14,12 +14,7 @@ func Example_scopes() {
 	// Note: the API call we will make doesn't need credentials as it supplies public information.
 	// However, for the purpose of demonstrating the general case, this is how you can provide
 	// credentials for API calls that require them.
-	myAuth := tcauth.New(
-		&tcclient.Credentials{
-			ClientID:    "SOME-CLIENT-ID",
-			AccessToken: "SOME-WELL-FORMED-ACCESS-TOKEN",
-		},
-	)
+	myAuth := tcauth.NewFromEnv()
 
 	// Look up client details for client id "project/taskcluster/tc-client-go/tests"...
 	resp, err := myAuth.Client("project/taskcluster/tc-client-go/tests")
@@ -46,10 +41,11 @@ func Example_updateClient() {
 	// In this example we will connect to a local auth server running on
 	// localhost with authentication disabled. This would also work for
 	// connecting to a local taskcluster-proxy instance.
-	myAuth := tcauth.New(nil)
-
-	// Set target url to localhost url...
-	myAuth.BaseURL = "http://localhost:60024/v1"
+	myAuth := tcauth.New(
+		&tcclient.Credentials{
+			RootURL: "http://localhost:60024",
+		},
+	)
 
 	// Update client id "b2g-power-tests" with new description and expiry...
 	client, err := myAuth.UpdateClient(

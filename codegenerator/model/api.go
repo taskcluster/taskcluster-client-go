@@ -123,10 +123,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "` + api.BaseURL + `"
-)
-
 type ` + api.apiDef.Name + ` tcclient.Client
 
 // New returns ` + text.IndefiniteArticle(api.apiDef.Name) + ` ` + api.apiDef.Name + ` client, configured to run against production. Pass in
@@ -136,10 +132,7 @@ type ` + api.apiDef.Name + ` tcclient.Client
 `
 	// Here we want to add spaces between commands and comments, such that the comments line up, e.g.:
 	//
-	//  myQueue, credsError := queue.New(nil)                    // credentials loaded from TASKCLUSTER_* environment variables
-	//  if credsError != nil {
-	//      // handle malformed credentials...
-	//  }
+	//  myQueue := queue.New(nil)                                // credentials loaded from TASKCLUSTER_* environment variables
 	//  myQueue.Authenticate = false                             // disable authentication (creds above are now ignored)
 	//  myQueue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 	//  data, err := myQueue.Task(.....)                         // for example, call the Task(.....) API endpoint (described further down)...
@@ -177,14 +170,14 @@ type ` + api.apiDef.Name + ` tcclient.Client
 	}
 
 	content += "//  if err != nil {\n"
-	content += "//  	// handle errors...\n"
+	content += "//          // handle errors...\n"
 	content += "//  }"
 	content += `
 func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
 	return &` + api.apiDef.Name + `{
 		Credentials: credentials,
-		BaseURL: DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Service: "` + api.ServiceName + `",
+		Version: "` + "v1" + `",
 	}
 }
 
@@ -193,15 +186,18 @@ func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *` + api.apiDef.Name + ` {
-	c := tcclient.CredentialsFromEnvVars()
 	return &` + api.apiDef.Name + `{
-		Credentials: c,
-		BaseURL: DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service: "` + api.ServiceName + `",
+		Version: "` + "v1" + `",
 	}
 }
 

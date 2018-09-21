@@ -69,44 +69,23 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://aws-provisioner.taskcluster.net/v1"
-)
-
 type AwsProvisioner tcclient.Client
 
-// New returns an AwsProvisioner client, configured to run against production. Pass in
-// nil to create a client without authentication. The
-// returned client is mutable, so returned settings can be altered.
-//
-//  awsProvisioner := tcawsprovisioner.New(nil)                              // client without authentication
-//  awsProvisioner.BaseURL = "http://localhost:1234/api/AwsProvisioner/v1"   // alternative API endpoint (production by default)
-//  data, err := awsProvisioner.ListWorkerTypeSummaries(.....)               // for example, call the ListWorkerTypeSummaries(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
-func New(credentials *tcclient.Credentials) *AwsProvisioner {
-	return &AwsProvisioner{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
-	}
-}
-
-// NewFromEnv returns an AwsProvisioner client with credentials taken from the environment variables:
+// NewFromEnv returns an Auth client with credentials taken from the environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *AwsProvisioner {
-	c := tcclient.CredentialsFromEnvVars()
 	return &AwsProvisioner{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
 	}
 }
 

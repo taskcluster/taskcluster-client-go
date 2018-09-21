@@ -43,44 +43,23 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "localhost:5555/v1"
-)
-
 type EC2Manager tcclient.Client
 
-// New returns an EC2Manager client, configured to run against production. Pass in
-// nil to create a client without authentication. The
-// returned client is mutable, so returned settings can be altered.
-//
-//  eC2Manager := tcec2manager.New(nil)                              // client without authentication
-//  eC2Manager.BaseURL = "http://localhost:1234/api/EC2Manager/v1"   // alternative API endpoint (production by default)
-//  data, err := eC2Manager.ListWorkerTypes(.....)                   // for example, call the ListWorkerTypes(.....) API endpoint (described further down)...
-//  if err != nil {
-//  	// handle errors...
-//  }
-func New(credentials *tcclient.Credentials) *EC2Manager {
-	return &EC2Manager{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
-	}
-}
-
-// NewFromEnv returns an EC2Manager client with credentials taken from the environment variables:
+// NewFromEnv returns an Auth client with credentials taken from the environment variables:
 //
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *EC2Manager {
-	c := tcclient.CredentialsFromEnvVars()
 	return &EC2Manager{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
 	}
 }
 

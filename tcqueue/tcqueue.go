@@ -51,10 +51,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://queue.taskcluster.net/v1/"
-)
-
 type Queue tcclient.Client
 
 // New returns a Queue client, configured to run against production. Pass in
@@ -65,13 +61,13 @@ type Queue tcclient.Client
 //  queue.BaseURL = "http://localhost:1234/api/Queue/v1"   // alternative API endpoint (production by default)
 //  err := queue.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
-//  	// handle errors...
+//          // handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Queue {
 	return &Queue{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Credentials: credentials,
+		Service:     "queue",
+		Version:     "v1",
 	}
 }
 
@@ -80,15 +76,18 @@ func New(credentials *tcclient.Credentials) *Queue {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Queue {
-	c := tcclient.CredentialsFromEnvVars()
 	return &Queue{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service:     "queue",
+		Version:     "v1",
 	}
 }
 

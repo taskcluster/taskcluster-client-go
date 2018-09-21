@@ -2,7 +2,6 @@ package tcclient
 
 import (
 	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"io/ioutil"
@@ -123,7 +122,7 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 	if err != nil {
 		t.Fatalf("Received error when generating temporary credentials: %s", err)
 	}
-	actualHeader, err := getExtHeader(tempCredentials)
+	actualHeader, err := tempCredentials.ExtHeader()
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
 	}
@@ -166,47 +165,12 @@ func checkExtHeaderTempCreds(t *testing.T, permCreds *Credentials) {
 // checkExtHeader simply checks if getExtHeader returns the same results as the
 // specified expected header.
 func checkExtHeader(t *testing.T, creds *Credentials, expectedHeader string) {
-	actualHeader, err := getExtHeader(creds)
+	actualHeader, err := creds.ExtHeader()
 	if err != nil {
 		t.Fatalf("Received error when generating ext header: %s", err)
 	}
 	if actualHeader != expectedHeader {
 		t.Fatalf("Expected header %q but got %q", expectedHeader, actualHeader)
-	}
-}
-
-func TestRequestWithContext(t *testing.T) {
-	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(2 * time.Second)
-		w.WriteHeader(200)
-		w.Write([]byte(`{"value": "hello world"}`))
-	}))
-	defer s.Close()
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	c := Client{
-		BaseURL:      s.URL,
-		Authenticate: false,
-		Context:      ctx,
-	}
-
-	// Make a call
-	var result struct {
-		Value string `json:"value"`
-	}
-	_, _, err := c.APICall(nil, "GET", "/whatever", &result, nil)
-	if err != nil {
-		t.Fatal("Unexpected error: ", err)
-	}
-
-	// Make a call and cancel
-	time.AfterFunc(100*time.Millisecond, cancel)
-	_, _, err = c.APICall(nil, "GET", "/whatever", &result, nil)
-	if err == nil {
-		t.Fatal("Should have had a cancel error")
-	}
-	if err != context.Canceled {
-		t.Fatalf("Expected canceled error but got %T %v", err, err)
 	}
 }
 
@@ -220,8 +184,9 @@ func TestContentTypeHeader(t *testing.T) {
 	}))
 	defer s.Close()
 	client := Client{
-		BaseURL:      s.URL,
-		Authenticate: false,
+		Credentials: &Credentials{
+			RootURL: s.URL,
+		},
 	}
 
 	// Three following calls should have no Content-Header set since request body is empty
@@ -307,7 +272,7 @@ func (m *MockHTTPClient) Requests() []MockHTTPRequest {
 }
 
 type RequestTestCase struct {
-	BaseURL         string
+	RootURL         string
 	RequestBody     []byte
 	Method          string
 	Route           string
@@ -321,14 +286,14 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		// configured by user, so we should test with both trailing and
 		// non-trailing slash; see https://bugzil.la/1484702
 		{
-			BaseURL:         "https://queue.taskcluster.net/v1",
+			RootURL:         "https://taskcluster.net",
 			RequestBody:     nil,
 			Method:          "GET",
 			Route:           "/a/b",
 			QueryParameters: nil,
 		},
 		{
-			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RootURL:         "https://my.taskcluster.deployment",
 			RequestBody:     nil,
 			Method:          "GET",
 			Route:           "/a/b",
@@ -336,20 +301,11 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		},
 		// test a request with a payload body and query string parameters
 		{
-			BaseURL:         "https://my.taskcluster.queue.deployment/v1/",
+			RootURL:         "https://my.taskcluster.deployment",
 			RequestBody:     []byte{1, 2, 3, 4, 5},
 			Method:          "POST",
 			Route:           "/a/b",
 			QueryParameters: url.Values{"a": []string{"A", "B"}},
-		},
-		// fully qualified routes with empty base urls are used by
-		// taskcluster-proxy
-		{
-			BaseURL:         "",
-			RequestBody:     nil,
-			Method:          "GET",
-			Route:           "https://localhost:12345/a/b",
-			QueryParameters: nil,
 		},
 	}
 
@@ -357,32 +313,29 @@ func TestHTTPRequestGeneration(t *testing.T) {
 		{
 			URL:    "https://queue.taskcluster.net/v1/a/b",
 			Method: "GET",
-			Body:   []byte{},
+			Body:   []uint8{},
 		},
 		{
-			URL:    "https://my.taskcluster.queue.deployment/v1/a/b",
+			URL:    "https://my.taskcluster.deployment/api/queue/v1/a/b",
 			Method: "GET",
-			Body:   []byte{},
+			Body:   []uint8{},
 		},
 		{
-			URL:    "https://my.taskcluster.queue.deployment/v1/a/b?a=A&a=B",
+			URL:    "https://my.taskcluster.deployment/api/queue/v1/a/b?a=A&a=B",
 			Method: "POST",
-			Body:   []byte{1, 2, 3, 4, 5},
-		},
-		{
-			URL:    "https://localhost:12345/a/b",
-			Method: "GET",
-			Body:   []byte{},
+			Body:   []uint8{0x1, 0x2, 0x3, 0x4, 0x5},
 		},
 	}
 
 	mockHTTPClient := &MockHTTPClient{T: t}
 	c := Client{
-		Authenticate: false,
-		HTTPClient:   mockHTTPClient,
+		HTTPClient:  mockHTTPClient,
+		Credentials: &Credentials{},
+		Version:     "v1",
+		Service:     "queue",
 	}
 	for _, testCase := range testCases {
-		c.BaseURL = testCase.BaseURL
+		c.Credentials.RootURL = testCase.RootURL
 		c.Request(testCase.RequestBody, testCase.Method, testCase.Route, testCase.QueryParameters)
 	}
 	actualRequests := mockHTTPClient.Requests()

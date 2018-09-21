@@ -9,15 +9,17 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strings"
-
-	// "net/http/httputil"
 	"net/url"
 	"reflect"
 	"time"
 
 	"github.com/taskcluster/httpbackoff"
+	tcurls "github.com/taskcluster/taskcluster-lib-urls"
 	hawk "github.com/tent/hawk-go"
+)
+
+const (
+	DefaultRootURL = "https://taskcluster.net"
 )
 
 // CallSummary provides information about the underlying http request and
@@ -81,19 +83,15 @@ type ReducedHTTPClient interface {
 // making multiple requests in various goroutines.
 var defaultHTTPClient ReducedHTTPClient = &http.Client{}
 
-// utility function to create a URL object based on given data
-func setURL(client *Client, route string, query url.Values) (u *url.URL, err error) {
-	URL := client.BaseURL
-	// See https://bugzil.la/1484702
-	// Avoid double separator; routes must start with `/`, so baseURL shouldn't
-	// end with `/`.
-	if strings.HasSuffix(URL, "/") {
-		URL = URL[:len(URL)-1]
+func (client *Client) UnsignedURL(route string, query url.Values) (u *url.URL, err error) {
+	rootURL := DefaultRootURL
+	if client.Credentials != nil && client.Credentials.RootURL != "" {
+		rootURL = client.Credentials.RootURL
 	}
-	URL += route
+	URL := tcurls.API(rootURL, client.Service, client.Version, route)
 	u, err = url.Parse(URL)
 	if err != nil {
-		return nil, fmt.Errorf("Cannot parse url: '%v', is BaseURL (%v) set correctly?\n%v\n", URL, client.BaseURL, err)
+		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) correct?\n%v\n", URL, client.Credentials.RootURL, err)
 	}
 	if query != nil {
 		u.RawQuery = query.Encode()
@@ -115,38 +113,30 @@ func (client *Client) Request(rawPayload []byte, method, route string, query url
 	httpCall := func() (*http.Response, error, error) {
 		var ioReader io.Reader
 		ioReader = bytes.NewReader(rawPayload)
-		u, err := setURL(client, route, query)
+		u, err := client.UnsignedURL(route, query)
 		if err != nil {
 			return nil, nil, fmt.Errorf("apiCall url cannot be parsed:\n%v\n", err)
 		}
 		callSummary.HTTPRequest, err = http.NewRequest(method, u.String(), ioReader)
 		if err != nil {
-			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the BaseURL (%v) set correctly?\n%v\n", u.String(), client.BaseURL, err)
+			return nil, nil, fmt.Errorf("Internal error: apiCall url cannot be parsed although thought to be valid: '%v', is the RootURL (%v) correct?\n%v\n", u.String(), client.Credentials.RootURL, err)
 		}
 		if len(rawPayload) > 0 {
 			callSummary.HTTPRequest.Header.Set("Content-Type", "application/json")
 		}
 		// Refresh Authorization header with each call...
 		// Only authenticate if client library user wishes to.
-		if client.Authenticate {
+		if client.Credentials != nil && client.Credentials.ClientID != "" {
 			err = client.Credentials.SignRequest(callSummary.HTTPRequest)
 			if err != nil {
 				return nil, nil, err
 			}
-		}
-		// Set context if one is given
-		if client.Context != nil {
-			callSummary.HTTPRequest = callSummary.HTTPRequest.WithContext(client.Context)
 		}
 		var resp *http.Response
 		if client.HTTPClient != nil {
 			resp, err = client.HTTPClient.Do(callSummary.HTTPRequest)
 		} else {
 			resp, err = defaultHTTPClient.Do(callSummary.HTTPRequest)
-		}
-		// return cancelled error, if context was cancelled
-		if client.Context != nil && client.Context.Err() != nil {
-			return nil, nil, client.Context.Err()
 		}
 		// b, e := httputil.DumpResponse(resp, true)
 		// if e == nil {
@@ -183,7 +173,7 @@ func (c *Credentials) SignRequest(req *http.Request) (err error) {
 		Hash: sha256.New,
 	}
 	reqAuth := hawk.NewRequestAuth(req, credentials, 0)
-	reqAuth.Ext, err = getExtHeader(c)
+	reqAuth.Ext, err = c.ExtHeader()
 	if err != nil {
 		return fmt.Errorf("Internal error: was not able to generate hawk ext header from provided credentials:\n%s\n%s", c, err)
 	}
@@ -223,10 +213,6 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 	callSummary, err := client.Request(rawPayload, method, route, query)
 	callSummary.HTTPRequestObject = payload
 	if err != nil {
-		// If context failed during this request, then we should just return that error
-		if client.Context != nil && client.Context.Err() != nil {
-			return result, callSummary, client.Context.Err()
-		}
 		return result,
 			callSummary,
 			&APICallException{
@@ -256,7 +242,7 @@ func (client *Client) APICall(payload interface{}, method, route string, result 
 // query string parameters, if any, and duration is the amount of time that the
 // signed URL should remain valid for.
 func (client *Client) SignedURL(route string, query url.Values, duration time.Duration) (u *url.URL, err error) {
-	u, err = setURL(client, route, query)
+	u, err = client.UnsignedURL(route, query)
 	if err != nil {
 		return
 	}
@@ -269,7 +255,7 @@ func (client *Client) SignedURL(route string, query url.Values, duration time.Du
 	if err != nil {
 		return
 	}
-	reqAuth.Ext, err = getExtHeader(client.Credentials)
+	reqAuth.Ext, err = client.Credentials.ExtHeader()
 	if err != nil {
 		return
 	}
@@ -295,7 +281,7 @@ func (client *Client) SignedURL(route string, query url.Values, duration time.Du
 // See:
 //   * https://docs.taskcluster.net/manual/apis/authorized-scopes
 //   * https://docs.taskcluster.net/manual/apis/temporary-credentials
-func getExtHeader(credentials *Credentials) (header string, err error) {
+func (credentials *Credentials) ExtHeader() (header string, err error) {
 	ext := &ExtHeader{}
 	if credentials.Certificate != "" {
 		certObj := new(Certificate)

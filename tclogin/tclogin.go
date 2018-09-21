@@ -43,10 +43,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://login.taskcluster.net/v1"
-)
-
 type Login tcclient.Client
 
 // New returns a Login client, configured to run against production. Pass in
@@ -57,13 +53,13 @@ type Login tcclient.Client
 //  login.BaseURL = "http://localhost:1234/api/Login/v1"   // alternative API endpoint (production by default)
 //  err := login.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
-//  	// handle errors...
+//          // handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Login {
 	return &Login{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Credentials: credentials,
+		Service:     "login",
+		Version:     "v1",
 	}
 }
 
@@ -72,15 +68,18 @@ func New(credentials *tcclient.Credentials) *Login {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Login {
-	c := tcclient.CredentialsFromEnvVars()
 	return &Login{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service:     "login",
+		Version:     "v1",
 	}
 }
 

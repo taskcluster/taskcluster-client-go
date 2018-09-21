@@ -1,7 +1,6 @@
 package tcclient
 
 import (
-	"context"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
@@ -34,6 +33,10 @@ type Credentials struct {
 	// no scopes at all.
 	// See https://docs.taskcluster.net/manual/apis/authorized-scopes
 	AuthorizedScopes []string `json:"authorizedScopes"`
+	// RootURL is the root url of the taskcluster cluster to which the
+	// credentials pertain, for example "https://taskcluster.net" or
+	// "https://my.taskcluster.org:23430".
+	RootURL string
 }
 
 func (creds *Credentials) String() string {
@@ -46,21 +49,19 @@ func (creds *Credentials) String() string {
 	)
 }
 
-// Client is the entry point into all the functionality in this package. It
-// contains authentication credentials, and a service endpoint, which are
-// required for all HTTP operations.
+// Client provides access to all taskcluster HTTP APIs for a given service, on
+// a given API version, of a given deployed cluster.
 type Client struct {
+	// Version of client API, e.g. "v1"
+	Version string
+	// Service name, e.g. "aws-provisioner"
+	Service string
+	// Credentials (including root url of cluster credentials pertain to) for
+	// making API calls
 	Credentials *Credentials
-	// The URL of the API endpoint to hit.
-	// For example, "https://auth.taskcluster.net/v1" for production auth service.
-	BaseURL string
-	// Whether authentication is enabled (e.g. set to 'false' when using taskcluster-proxy)
-	Authenticate bool
-	// HTTPClient is a ReducedHTTPClient to be used for the http call instead of
-	// the DefaultHTTPClient.
+	// HTTPClient is a ReducedHTTPClient to be used for http calls. If nil,
+	// DefaultHTTPClient will be used.
 	HTTPClient ReducedHTTPClient
-	// Context that aborts all requests with this client
-	Context context.Context
 }
 
 // Certificate represents the certificate used in Temporary Credentials. See
@@ -213,5 +214,6 @@ func CredentialsFromEnvVars() *Credentials {
 		ClientID:    os.Getenv("TASKCLUSTER_CLIENT_ID"),
 		AccessToken: os.Getenv("TASKCLUSTER_ACCESS_TOKEN"),
 		Certificate: os.Getenv("TASKCLUSTER_CERTIFICATE"),
+		RootURL:     os.Getenv("TASKCLUSTER_ROOT_URL"),
 	}
 }

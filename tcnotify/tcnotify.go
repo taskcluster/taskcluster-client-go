@@ -42,10 +42,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://notify.taskcluster.net/v1/"
-)
-
 type Notify tcclient.Client
 
 // New returns a Notify client, configured to run against production. Pass in
@@ -56,13 +52,13 @@ type Notify tcclient.Client
 //  notify.BaseURL = "http://localhost:1234/api/Notify/v1"   // alternative API endpoint (production by default)
 //  err := notify.Ping(.....)                                // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
-//  	// handle errors...
+//          // handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Notify {
 	return &Notify{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Credentials: credentials,
+		Service:     "notify",
+		Version:     "v1",
 	}
 }
 
@@ -71,15 +67,18 @@ func New(credentials *tcclient.Credentials) *Notify {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Notify {
-	c := tcclient.CredentialsFromEnvVars()
 	return &Notify{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service:     "notify",
+		Version:     "v1",
 	}
 }
 

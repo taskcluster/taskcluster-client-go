@@ -47,10 +47,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://purge-cache.taskcluster.net/v1/"
-)
-
 type PurgeCache tcclient.Client
 
 // New returns a PurgeCache client, configured to run against production. Pass in
@@ -61,13 +57,13 @@ type PurgeCache tcclient.Client
 //  purgeCache.BaseURL = "http://localhost:1234/api/PurgeCache/v1"   // alternative API endpoint (production by default)
 //  err := purgeCache.Ping(.....)                                    // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
-//  	// handle errors...
+//          // handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *PurgeCache {
 	return &PurgeCache{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Credentials: credentials,
+		Service:     "purge-cache",
+		Version:     "v1",
 	}
 }
 
@@ -76,15 +72,18 @@ func New(credentials *tcclient.Credentials) *PurgeCache {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *PurgeCache {
-	c := tcclient.CredentialsFromEnvVars()
 	return &PurgeCache{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service:     "purge-cache",
+		Version:     "v1",
 	}
 }
 

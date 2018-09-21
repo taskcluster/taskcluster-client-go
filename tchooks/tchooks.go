@@ -61,10 +61,6 @@ import (
 	tcclient "github.com/taskcluster/taskcluster-client-go"
 )
 
-const (
-	DefaultBaseURL = "https://hooks.taskcluster.net/v1/"
-)
-
 type Hooks tcclient.Client
 
 // New returns a Hooks client, configured to run against production. Pass in
@@ -75,13 +71,13 @@ type Hooks tcclient.Client
 //  hooks.BaseURL = "http://localhost:1234/api/Hooks/v1"   // alternative API endpoint (production by default)
 //  err := hooks.Ping(.....)                               // for example, call the Ping(.....) API endpoint (described further down)...
 //  if err != nil {
-//  	// handle errors...
+//          // handle errors...
 //  }
 func New(credentials *tcclient.Credentials) *Hooks {
 	return &Hooks{
-		Credentials:  credentials,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: credentials != nil,
+		Credentials: credentials,
+		Service:     "hooks",
+		Version:     "v1",
 	}
 }
 
@@ -90,15 +86,18 @@ func New(credentials *tcclient.Credentials) *Hooks {
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//  TASKCLUSTER_ROOT_URL
 //
-// If environment variables TASKCLUSTER_CLIENT_ID is empty string or undefined
+// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
+// https://taskcluster.net will be assumed.
+//
+// If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Hooks {
-	c := tcclient.CredentialsFromEnvVars()
 	return &Hooks{
-		Credentials:  c,
-		BaseURL:      DefaultBaseURL,
-		Authenticate: c.ClientID != "",
+		Credentials: tcclient.CredentialsFromEnvVars(),
+		Service:     "hooks",
+		Version:     "v1",
 	}
 }
 
