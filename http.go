@@ -88,7 +88,7 @@ func (client *Client) UnsignedURL(route string, query url.Values) (u *url.URL, e
 	if client.Credentials != nil && client.Credentials.RootURL != "" {
 		rootURL = client.Credentials.RootURL
 	}
-	URL := tcurls.API(rootURL, client.Service, client.Version, route)
+	URL := tcurls.API(rootURL, client.ServiceName, client.APIVersion, route)
 	u, err = url.Parse(URL)
 	if err != nil {
 		return nil, fmt.Errorf("Cannot parse url: '%v', is RootURL (%v) correct?\n%v\n", URL, client.Credentials.RootURL, err)

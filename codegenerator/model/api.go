@@ -172,12 +172,16 @@ type ` + api.apiDef.Name + ` tcclient.Client
 	content += "//  if err != nil {\n"
 	content += "//          // handle errors...\n"
 	content += "//  }"
+	apiVersion := api.APIVersion
+	if apiVersion == "" {
+		apiVersion = "v1"
+	}
 	content += `
 func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
 	return &` + api.apiDef.Name + `{
 		Credentials: credentials,
-		Service: "` + api.ServiceName + `",
-		Version: "` + "v1" + `",
+		ServiceName: "` + api.ServiceName + `",
+		APIVersion: "` + apiVersion + `",
 	}
 }
 
@@ -188,16 +192,16 @@ func New(credentials *tcclient.Credentials) *` + api.apiDef.Name + ` {
 //  TASKCLUSTER_CERTIFICATE
 //  TASKCLUSTER_ROOT_URL
 //
-// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
-// https://taskcluster.net will be assumed.
+// No validation is performed on the loaded values, and unset environment
+// variables will result in empty string values.
 //
 // If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *` + api.apiDef.Name + ` {
 	return &` + api.apiDef.Name + `{
 		Credentials: tcclient.CredentialsFromEnvVars(),
-		Service: "` + api.ServiceName + `",
-		Version: "` + "v1" + `",
+		ServiceName: "` + api.ServiceName + `",
+		APIVersion: "` + apiVersion + `",
 	}
 }
 

@@ -58,8 +58,8 @@ type Login tcclient.Client
 func New(credentials *tcclient.Credentials) *Login {
 	return &Login{
 		Credentials: credentials,
-		Service:     "login",
-		Version:     "v1",
+		ServiceName: "login",
+		APIVersion:  "v1",
 	}
 }
 
@@ -70,16 +70,16 @@ func New(credentials *tcclient.Credentials) *Login {
 //  TASKCLUSTER_CERTIFICATE
 //  TASKCLUSTER_ROOT_URL
 //
-// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
-// https://taskcluster.net will be assumed.
+// No validation is performed on the loaded values, and unset environment
+// variables will result in empty string values.
 //
 // If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Login {
 	return &Login{
 		Credentials: tcclient.CredentialsFromEnvVars(),
-		Service:     "login",
-		Version:     "v1",
+		ServiceName: "login",
+		APIVersion:  "v1",
 	}
 }
 

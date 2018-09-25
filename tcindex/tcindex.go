@@ -149,8 +149,8 @@ type Index tcclient.Client
 func New(credentials *tcclient.Credentials) *Index {
 	return &Index{
 		Credentials: credentials,
-		Service:     "index",
-		Version:     "v1",
+		ServiceName: "index",
+		APIVersion:  "v1",
 	}
 }
 
@@ -161,16 +161,16 @@ func New(credentials *tcclient.Credentials) *Index {
 //  TASKCLUSTER_CERTIFICATE
 //  TASKCLUSTER_ROOT_URL
 //
-// If environment variable TASKCLUSTER_ROOT_URL is empty string or not set,
-// https://taskcluster.net will be assumed.
+// No validation is performed on the loaded values, and unset environment
+// variables will result in empty string values.
 //
 // If environment variable TASKCLUSTER_CLIENT_ID is empty string or not set,
 // authentication will be disabled.
 func NewFromEnv() *Index {
 	return &Index{
 		Credentials: tcclient.CredentialsFromEnvVars(),
-		Service:     "index",
-		Version:     "v1",
+		ServiceName: "index",
+		APIVersion:  "v1",
 	}
 }
 

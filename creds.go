@@ -53,9 +53,9 @@ func (creds *Credentials) String() string {
 // a given API version, of a given deployed cluster.
 type Client struct {
 	// Version of client API, e.g. "v1"
-	Version string
+	APIVersion string
 	// Service name, e.g. "aws-provisioner"
-	Service string
+	ServiceName string
 	// Credentials (including root url of cluster credentials pertain to) for
 	// making API calls
 	Credentials *Credentials
@@ -204,9 +204,11 @@ func (creds *Credentials) Cert() (cert *Certificate, err error) {
 
 // CredentialsFromEnvVars creates and returns Taskcluster credentials
 // initialised from the values of environment variables:
+//
 //  TASKCLUSTER_CLIENT_ID
 //  TASKCLUSTER_ACCESS_TOKEN
 //  TASKCLUSTER_CERTIFICATE
+//
 // No validation is performed on the loaded values, and unset environment
 // variables will result in empty string values.
 func CredentialsFromEnvVars() *Credentials {

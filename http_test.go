@@ -331,8 +331,8 @@ func TestHTTPRequestGeneration(t *testing.T) {
 	c := Client{
 		HTTPClient:  mockHTTPClient,
 		Credentials: &Credentials{},
-		Version:     "v1",
-		Service:     "queue",
+		APIVersion:  "v1",
+		ServiceName: "queue",
 	}
 	for _, testCase := range testCases {
 		c.Credentials.RootURL = testCase.RootURL
