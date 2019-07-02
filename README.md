@@ -9,6 +9,19 @@
 
 A go (golang) port of taskcluster-client.
 
+## Deprecated
+
+**NOTE**: This library has been moved into [the main Taskcluster distribution](https://github.com/taskcluster/taskcluster).
+
+To use the new library, change `github.com/taskcluster/taskcluster-client-go` to `github.com/taskcluster/taskcluster/clients/client-go/v14`, substituting the major version of the Taskcluster services deployment you are targeting.
+Omit the version (`/v14`) if not using Go modules.
+
+This library will continue to be updated with changes as observed on https://taskcluster-staging.net, but that may lag or lead landed changes somewhat, and the resulting library is unversioned with respect to Taskcluster services.
+At some point, these updates will cease, and this repository will remain as an archive.
+We recommend all consumers of this library upgrade to the newer path as soon as possible.
+
+## Documentation
+
 Complete godoc documentation [here](https://godoc.org/github.com/taskcluster/taskcluster-client-go).
 
 This library provides the following packages to interface with Taskcluster:
